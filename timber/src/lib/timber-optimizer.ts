@@ -14,6 +14,7 @@ export interface CutPlan {
   cuts: number[];
   waste: number; // leftover from the timber after cuts
   kerfUsed: number; // total kerf consumed on this timber
+  isOwned: boolean; // true if using owned timber, false if purchased
 }
 
 export interface Solution {
@@ -22,6 +23,8 @@ export interface Solution {
   totalWaste: number; // includes leftover + kerf used
   totalKerf: number; // total kerf across all timbers
   totalTimbers: number;
+  ownedTimbersUsed: number; // count of owned timbers used
+  purchasedTimbersNeeded: number; // count of timbers to purchase
 }
 
 /**
@@ -29,11 +32,17 @@ export interface Solution {
  */
 export type OptimizeMode = 'cost' | 'waste'
 
+export interface OwnedTimber {
+  length: number;
+  quantity: number; // how many of this length the user owns
+}
+
 export function optimizeTimberCutting(
   availableTimbers: TimberStock[],
   requiredCuts: RequiredCut[],
   kerf: number = 0,
-  mode: OptimizeMode = 'cost'
+  mode: OptimizeMode = 'cost',
+  ownedTimbers: OwnedTimber[] = []
 ): Solution {
   // Flatten required cuts into individual pieces
   const pieces: number[] = [];
@@ -46,6 +55,9 @@ export function optimizeTimberCutting(
   // Sort pieces in descending order (largest first) for better packing
   pieces.sort((a, b) => b - a);
 
+  // Track remaining quantities of owned timber
+  const ownedInventory = ownedTimbers.map(o => ({ length: o.length, remaining: o.quantity }));
+
   // Sort timbers by cost efficiency (price per unit length)
   const sortedTimbers = [...availableTimbers].sort(
     (a, b) => a.price / a.length - b.price / b.length
@@ -56,44 +68,74 @@ export function optimizeTimberCutting(
 
   // Try to fit pieces into timbers using First Fit Decreasing
   while (remainingPieces.length > 0) {
-    let bestFit: { timber: TimberStock; cuts: number[]; waste: number; kerfUsed: number; usedLength: number } | null = null;
+    let bestFit: { timber: TimberStock; cuts: number[]; waste: number; kerfUsed: number; usedLength: number; isOwned: boolean } | null = null;
 
-    // Try each timber type
-    for (const timber of sortedTimbers) {
-      const result = fitPiecesToTimber(timber.length, [...remainingPieces], kerf);
-      const usedLength = timber.length - result.waste;
+    // First, try owned timber
+    for (const owned of ownedInventory) {
+      if (owned.remaining <= 0) continue;
+      
+      const result = fitPiecesToTimber(owned.length, [...remainingPieces], kerf);
+      const usedLength = owned.length - result.waste;
       
       if (result.cuts.length > 0) {
         const waste = result.waste;
         
-        // Prefer timber with less waste, or if same waste, more pieces fitted
         if (!bestFit) {
-          bestFit = { timber, cuts: result.cuts, waste, kerfUsed: result.kerfUsed ?? 0, usedLength };
+          bestFit = { timber: { length: owned.length, price: 0 }, cuts: result.cuts, waste, kerfUsed: result.kerfUsed ?? 0, usedLength, isOwned: true };
           continue;
         }
 
         if (mode === 'waste') {
-          // minimize waste, tie-breaker max pieces, then lower price
           if (
             waste < bestFit.waste ||
-            (waste === bestFit.waste && result.cuts.length > bestFit.cuts.length) ||
-            (waste === bestFit.waste && result.cuts.length === bestFit.cuts.length && timber.price < bestFit.timber.price)
+            (waste === bestFit.waste && result.cuts.length > bestFit.cuts.length)
           ) {
-            bestFit = { timber, cuts: result.cuts, waste, kerfUsed: result.kerfUsed ?? 0, usedLength };
+            bestFit = { timber: { length: owned.length, price: 0 }, cuts: result.cuts, waste, kerfUsed: result.kerfUsed ?? 0, usedLength, isOwned: true };
           }
         } else {
-          // mode === 'cost' -> minimize effective cost per used length, then lowest timber price, then less waste
-          const bestUsed = bestFit.usedLength > 0 ? bestFit.usedLength : 1; // avoid div by zero
-          const bestCostPerUsed = bestFit.timber.price / bestUsed;
-          const currUsed = usedLength > 0 ? usedLength : 1;
-          const currCostPerUsed = timber.price / currUsed;
+          // Cost mode: owned timber is free, always prefer it
+          if (!bestFit.isOwned || result.cuts.length > bestFit.cuts.length) {
+            bestFit = { timber: { length: owned.length, price: 0 }, cuts: result.cuts, waste, kerfUsed: result.kerfUsed ?? 0, usedLength, isOwned: true };
+          }
+        }
+      }
+    }
 
-          if (
-            currCostPerUsed < bestCostPerUsed ||
-            (currCostPerUsed === bestCostPerUsed && timber.price < bestFit.timber.price) ||
-            (currCostPerUsed === bestCostPerUsed && timber.price === bestFit.timber.price && result.cuts.length > bestFit.cuts.length)
-          ) {
-            bestFit = { timber, cuts: result.cuts, waste, kerfUsed: result.kerfUsed ?? 0, usedLength };
+    // If no owned timber worked, try purchasable timber
+    if (!bestFit || !bestFit.isOwned) {
+      for (const timber of sortedTimbers) {
+        const result = fitPiecesToTimber(timber.length, [...remainingPieces], kerf);
+        const usedLength = timber.length - result.waste;
+        
+        if (result.cuts.length > 0) {
+          const waste = result.waste;
+          
+          if (!bestFit) {
+            bestFit = { timber, cuts: result.cuts, waste, kerfUsed: result.kerfUsed ?? 0, usedLength, isOwned: false };
+            continue;
+          }
+
+          if (mode === 'waste') {
+            if (
+              waste < bestFit.waste ||
+              (waste === bestFit.waste && result.cuts.length > bestFit.cuts.length) ||
+              (waste === bestFit.waste && result.cuts.length === bestFit.cuts.length && timber.price < bestFit.timber.price)
+            ) {
+              bestFit = { timber, cuts: result.cuts, waste, kerfUsed: result.kerfUsed ?? 0, usedLength, isOwned: false };
+            }
+          } else {
+            const bestUsed = bestFit.usedLength > 0 ? bestFit.usedLength : 1;
+            const bestCostPerUsed = bestFit.timber.price / bestUsed;
+            const currUsed = usedLength > 0 ? usedLength : 1;
+            const currCostPerUsed = timber.price / currUsed;
+
+            if (
+              currCostPerUsed < bestCostPerUsed ||
+              (currCostPerUsed === bestCostPerUsed && timber.price < bestFit.timber.price) ||
+              (currCostPerUsed === bestCostPerUsed && timber.price === bestFit.timber.price && result.cuts.length > bestFit.cuts.length)
+            ) {
+              bestFit = { timber, cuts: result.cuts, waste, kerfUsed: result.kerfUsed ?? 0, usedLength, isOwned: false };
+            }
           }
         }
       }
@@ -114,11 +156,18 @@ export function optimizeTimberCutting(
         waste: suitableTimber.length - largestPiece,
         kerfUsed: 0,
         usedLength: largestPiece,
+        isOwned: false,
       };
     }
 
     if (!bestFit) {
       throw new Error('Internal optimizer error: best fit missing')
+    }
+
+    // Decrement owned inventory if used
+    if (bestFit.isOwned) {
+      const ownedEntry = ownedInventory.find(o => o.length === bestFit!.timber.length && o.remaining > 0);
+      if (ownedEntry) ownedEntry.remaining--;
     }
 
     // Add plan
@@ -128,6 +177,7 @@ export function optimizeTimberCutting(
       cuts: bestFit.cuts,
       waste: bestFit.waste,
       kerfUsed: bestFit.kerfUsed ?? 0,
+      isOwned: bestFit.isOwned,
     });
 
     // Remove fitted pieces
@@ -137,12 +187,14 @@ export function optimizeTimberCutting(
     });
   }
 
-  const totalCost = plans.reduce((sum, plan) => sum + plan.timberPrice, 0);
+  const totalCost = plans.reduce((sum, plan) => sum + (plan.isOwned ? 0 : plan.timberPrice), 0);
   const totalWaste = plans.reduce((sum, plan) => sum + plan.waste + plan.kerfUsed, 0);
   const totalKerf = plans.reduce((sum, plan) => sum + plan.kerfUsed, 0);
   const totalTimbers = plans.length;
+  const ownedTimbersUsed = plans.filter(p => p.isOwned).length;
+  const purchasedTimbersNeeded = plans.filter(p => !p.isOwned).length;
 
-  return { plans, totalCost, totalWaste, totalKerf, totalTimbers };
+  return { plans, totalCost, totalWaste, totalKerf, totalTimbers, ownedTimbersUsed, purchasedTimbersNeeded };
 }
 
 /**
@@ -158,12 +210,11 @@ function fitPiecesToTimber(
   let kerfUsed = 0;
 
   for (const piece of pieces) {
-    const needKerf = cuts.length > 0 ? kerf : 0;
-    const potentialUsed = used + needKerf + piece;
+    const potentialUsed = used + piece + kerf;
     if (potentialUsed <= timberLength) {
-      // We'll add piece and kerf (if needed)
+      // Add piece and kerf for this cut
       used = potentialUsed;
-      if (needKerf > 0) kerfUsed += needKerf;
+      kerfUsed += kerf;
       cuts.push(piece);
     }
   }

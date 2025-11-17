@@ -1,22 +1,30 @@
 import { useState } from 'react'
-import { Plus, Trash2, Calculator } from 'lucide-react'
+import { Plus, Trash2, Calculator, Info, Settings } from 'lucide-react'
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { optimizeTimberCutting, type TimberStock, type RequiredCut, type Solution } from '@/lib/timber-optimizer'
+import { optimizeTimberCutting, type TimberStock, type RequiredCut, type Solution, type OwnedTimber } from '@/lib/timber-optimizer'
+import { mmToDisplayStr, mmToDisplayNumber, displayToMM } from '@/lib/units'
 import './App.css'
 
 function App() {
   const [timbers, setTimbers] = useState<TimberStock[]>([
-    { length: 2400, price: 10 },
-    { length: 3600, price: 14 },
+    { length: 1200, price: 9.40 },
+    { length: 1800, price: 14.50 },
+    { length: 2400, price: 19.20 },
+    { length: 3000, price: 23.90 },
+    { length: 3600, price: 28.70 },
   ])
   const [cuts, setCuts] = useState<RequiredCut[]>([
     { length: 600, quantity: 4 },
   ])
+  const [ownedTimbers, setOwnedTimbers] = useState<OwnedTimber[]>([])
   const [solution, setSolution] = useState<Solution | null>(null)
   const [kerf, setKerf] = useState<number>(3)
   const [mode, setMode] = useState<'cost' | 'waste'>('cost')
+  const [unit, setUnit] = useState<'mm' | 'in'>('mm')
 
   const addTimber = () => {
     setTimbers([...timbers, { length: 0, price: 0 }])
@@ -46,17 +54,34 @@ function App() {
     setCuts(updated)
   }
 
+  const addOwnedTimber = () => {
+    setOwnedTimbers([...ownedTimbers, { length: 0, quantity: 1 }])
+  }
+
+  const removeOwnedTimber = (index: number) => {
+    setOwnedTimbers(ownedTimbers.filter((_, i) => i !== index))
+  }
+
+  const updateOwnedTimber = (index: number, field: keyof OwnedTimber, value: number) => {
+    const updated = [...ownedTimbers]
+    updated[index][field] = value
+    setOwnedTimbers(updated)
+  }
+
   const calculate = () => {
     try {
-      const result = optimizeTimberCutting(timbers, cuts, kerf, mode)
+      const result = optimizeTimberCutting(timbers, cuts, kerf, mode, ownedTimbers)
       setSolution(result)
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Error calculating solution')
     }
   }
 
+  // Using conversion helpers from `src/lib/units`.
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+    <TooltipProvider>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold tracking-tight">Timber Cut Optimizer</h1>
@@ -75,9 +100,9 @@ function App() {
                 <div key={index} className="flex gap-2 items-center">
                   <Input
                     type="number"
-                    placeholder="Length (mm)"
-                    value={timber.length || ''}
-                    onChange={(e) => updateTimber(index, 'length', Number(e.target.value))}
+                    placeholder={`Length (${unit})`}
+                    value={timber.length ? mmToDisplayNumber(timber.length, unit) : ''}
+                    onChange={(e) => updateTimber(index, 'length', displayToMM(Number(e.target.value), unit))}
                     className="flex-1"
                   />
                   <Input
@@ -103,8 +128,53 @@ function App() {
               </Button>
             </CardContent>
           </Card>
+        {/* Timber On Hand */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Timber On Hand</CardTitle>
+            <CardDescription>Enter timber you already own (optional)</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {ownedTimbers.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No owned timber. Click below to add.</p>
+            ) : (
+              ownedTimbers.map((owned, index) => (
+                <div key={index} className="flex gap-2 items-center">
+                  <Input
+                    type="number"
+                    placeholder={`Length (${unit})`}
+                    value={owned.length ? mmToDisplayNumber(owned.length, unit) : ''}
+                    onChange={(e) => updateOwnedTimber(index, 'length', displayToMM(Number(e.target.value), unit))}
+                    className="flex-1"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Qty"
+                    value={owned.quantity || ''}
+                    onChange={(e) => updateOwnedTimber(index, 'quantity', Number(e.target.value))}
+                    className="w-24"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => removeOwnedTimber(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))
+            )}
+            <Button onClick={addOwnedTimber} variant="outline" className="w-full">
+              <Plus className="h-4 w-4" />
+              Add Owned Timber
+            </Button>
+          </CardContent>
+        </Card>
 
-          {/* Required Cuts */}
+        </div>
+
+
+                  {/* Required Cuts */}
           <Card>
             <CardHeader>
               <CardTitle>Required Cuts</CardTitle>
@@ -115,9 +185,9 @@ function App() {
                 <div key={index} className="flex gap-2 items-center">
                   <Input
                     type="number"
-                    placeholder="Length (mm)"
-                    value={cut.length || ''}
-                    onChange={(e) => updateCut(index, 'length', Number(e.target.value))}
+                    placeholder={`Length (${unit})`}
+                    value={cut.length ? mmToDisplayNumber(cut.length, unit) : ''}
+                    onChange={(e) => updateCut(index, 'length', displayToMM(Number(e.target.value), unit))}
                     className="flex-1"
                   />
                   <Input
@@ -143,39 +213,102 @@ function App() {
               </Button>
             </CardContent>
           </Card>
-        </div>
 
-        {/* Kerf input and Calculate Button */}
-        <div className="flex items-center justify-center gap-4">
-          <div className="flex items-center gap-2">
-            <label className="text-sm">Kerf (mm)</label>
-            <Input
-              type="number"
-              value={kerf}
-              min={0}
-              step={0.1}
-              onChange={(e) => setKerf(Number(e.target.value))}
-              className="w-32"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm">Mode</label>
-            <select
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={mode}
-              onChange={(e) => setMode(e.target.value as 'cost' | 'waste')}
-            >
-              <option value="cost">Lowest total cost</option>
-              <option value="waste">Least wastage</option>
-            </select>
-          </div>
-          <div className="text-sm text-muted-foreground">Select objective: <strong className="text-foreground">{mode === 'cost' ? 'Lowest total cost' : 'Least wastage'}</strong></div>
-        </div>
-        <div className="flex justify-center">
+        {/* Calculate Button with Settings */}
+        <div className="flex justify-center gap-3">
           <Button onClick={calculate} size="lg" className="min-w-48">
             <Calculator className="h-5 w-5" />
             Calculate Optimal Solution
           </Button>
+          
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="lg">
+                <Settings className="h-5 w-5" />
+                Settings
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Optimization Settings</DialogTitle>
+                <DialogDescription>
+                  Configure kerf and optimization mode for your cutting plan
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-6 py-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium">Kerf ({unit})</label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Kerf: the width of material removed by the saw blade during each cut. Every cut consumes this amount. Values are shown in the selected measurement unit.
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <Input
+                    type="number"
+                    value={mmToDisplayNumber(kerf, unit)}
+                    min={0}
+                    step={unit === 'mm' ? 0.1 : 0.01}
+                    onChange={(e) => setKerf(displayToMM(Number(e.target.value), unit))}
+                    className="w-full"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium">Measurement Unit</label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Select the unit for measurements (mm or inches). Internally values are stored as mm.
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <select
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={unit}
+                    onChange={(e) => setUnit(e.target.value as 'mm' | 'in')}
+                  >
+                    <option value="mm">Metric (mm)</option>
+                    <option value="in">Imperial (in)</option>
+                  </select>
+                  <p className="text-sm text-muted-foreground">Current: <strong className="text-foreground">{unit === 'mm' ? 'mm' : 'inches'}</strong></p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium">Optimization Mode</label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        "Lowest total cost" minimizes purchase cost; "Least wastage" minimizes leftover timber.
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <select
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={mode}
+                    onChange={(e) => setMode(e.target.value as 'cost' | 'waste')}
+                  >
+                    <option value="cost">Lowest total cost</option>
+                    <option value="waste">Least wastage</option>
+                  </select>
+                  <p className="text-sm text-muted-foreground">
+                    Current: <strong className="text-foreground">{mode === 'cost' ? 'Lowest total cost' : 'Least wastage'}</strong>
+                  </p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Results */}
@@ -187,22 +320,30 @@ function App() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Summary */}
-                <div className="grid grid-cols-4 gap-4 p-4 bg-muted rounded-lg">
+                <div className="grid grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
                 <div className="text-center">
                   <div className="text-2xl font-bold">${solution.totalCost.toFixed(2)}</div>
-                  <div className="text-sm text-muted-foreground">Total Cost</div>
+                  <div className="text-sm text-muted-foreground">Purchase Cost</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{solution.totalTimbers}</div>
-                  <div className="text-sm text-muted-foreground">Timbers Needed</div>
+                  <div className="text-2xl font-bold">{solution.ownedTimbersUsed}</div>
+                  <div className="text-sm text-muted-foreground">Owned Used</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{solution.totalWaste}mm</div>
+                  <div className="text-2xl font-bold">{solution.purchasedTimbersNeeded}</div>
+                  <div className="text-sm text-muted-foreground">To Purchase</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{mmToDisplayStr(solution.totalWaste, unit)}</div>
                   <div className="text-sm text-muted-foreground">Total Waste</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{solution.totalKerf}mm</div>
+                  <div className="text-2xl font-bold">{mmToDisplayStr(solution.totalKerf, unit)}</div>
                   <div className="text-sm text-muted-foreground">Kerf Used</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{solution.totalTimbers}</div>
+                  <div className="text-sm text-muted-foreground">Total Timbers</div>
                 </div>
               </div>
 
@@ -212,28 +353,30 @@ function App() {
                 {solution.plans.map((plan, index) => (
                   <div key={index} className="p-4 border rounded-lg space-y-2">
                     <div className="flex justify-between items-center">
-                      <span className="font-medium">Timber #{index + 1}</span>
+                      <span className="font-medium">
+                        Timber #{index + 1} {plan.isOwned && <span className="text-xs text-primary">(Owned)</span>}
+                      </span>
                       <span className="text-sm text-muted-foreground">
-                        {plan.timberLength}mm @ ${plan.timberPrice.toFixed(2)}
+                        {mmToDisplayStr(plan.timberLength, unit)} {!plan.isOwned && `@ $${plan.timberPrice.toFixed(2)}`}
                       </span>
                     </div>
                     <div className="flex gap-2 flex-wrap">
                       {plan.cuts.map((cut, cutIndex) => (
                         <span
                           key={cutIndex}
-                          className="px-3 py-1 bg-primary text-primary-foreground rounded-full text-sm"
+                          className={plan.isOwned ? "px-3 py-1 bg-green-500 text-white rounded-full text-sm" : "px-3 py-1 bg-primary text-primary-foreground rounded-full text-sm"}
                         >
-                          {cut}mm
+                          {mmToDisplayStr(cut, unit)}
                         </span>
                       ))}
                       {plan.kerfUsed > 0 && (
-                        <span className="px-3 py-1 bg-accent text-accent-foreground rounded-full text-sm">
-                          kerf {plan.kerfUsed}mm
+                          <span className="px-3 py-1 bg-accent text-accent-foreground rounded-full text-sm">
+                          kerf {mmToDisplayStr(plan.kerfUsed, unit)}
                         </span>
                       )}
                       {plan.waste > 0 && (
-                        <span className="px-3 py-1 bg-destructive/20 text-destructive rounded-full text-sm">
-                          {plan.waste}mm waste
+                          <span className="px-3 py-1 bg-destructive/20 text-destructive rounded-full text-sm">
+                          {mmToDisplayStr(plan.waste, unit)} waste
                         </span>
                       )}
                     </div>
@@ -244,7 +387,8 @@ function App() {
           </Card>
         )}
       </div>
-    </div>
+      </div>
+    </TooltipProvider>
   )
 }
 
