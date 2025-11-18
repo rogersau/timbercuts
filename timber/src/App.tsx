@@ -81,19 +81,19 @@ function App() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight">Timber Cut Optimizer</h1>
-          <p className="text-muted-foreground">Minimize waste and cost for your timber cutting needs</p>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Cut Optimiser</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Minimise waste and cost for your timber cutting needs</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
           {/* Available Timber */}
           <Card>
             <CardHeader>
-              <CardTitle>Available Timber Stock</CardTitle>
-              <CardDescription>Enter available timber lengths and prices</CardDescription>
+              <CardTitle>Available Stock</CardTitle>
+              <CardDescription>Enter available lengths and prices</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {timbers.map((timber, index) => (
@@ -131,12 +131,12 @@ function App() {
         {/* Timber On Hand */}
         <Card>
           <CardHeader>
-            <CardTitle>Timber On Hand</CardTitle>
-            <CardDescription>Enter timber you already own (optional)</CardDescription>
+            <CardTitle>On Hand</CardTitle>
+            <CardDescription>Enter material you already own (optional)</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {ownedTimbers.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No owned timber. Click below to add.</p>
+              <p className="text-sm text-muted-foreground">No owned material. Click below to add.</p>
             ) : (
               ownedTimbers.map((owned, index) => (
                 <div key={index} className="flex gap-2 items-center">
@@ -215,17 +215,18 @@ function App() {
           </Card>
 
         {/* Calculate Button with Settings */}
-        <div className="flex justify-center gap-3">
-          <Button onClick={calculate} size="lg" className="min-w-48">
+        <div className="flex flex-wrap justify-center gap-3">
+          <Button onClick={calculate} size="lg" className="flex-1 sm:flex-initial sm:min-w-48">
             <Calculator className="h-5 w-5" />
-            Calculate Optimal Solution
+            <span className="hidden sm:inline">Calculate Optimal Solution</span>
+            <span className="sm:hidden">Calculate</span>
           </Button>
           
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" className="flex-1 sm:flex-initial">
                 <Settings className="h-5 w-5" />
-                Settings
+                <span className="hidden sm:inline">Settings</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -290,7 +291,7 @@ function App() {
                         <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        "Lowest total cost" minimizes purchase cost; "Least wastage" minimizes leftover timber.
+                        "Lowest total cost" minimizes purchase cost; "Least wastage" minimizes leftover material.
                       </TooltipContent>
                     </Tooltip>
                   </div>
@@ -320,30 +321,30 @@ function App() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Summary */}
-                <div className="grid grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg">
                 <div className="text-center">
-                  <div className="text-2xl font-bold">${solution.totalCost.toFixed(2)}</div>
-                  <div className="text-sm text-muted-foreground">Purchase Cost</div>
+                  <div className="text-xl sm:text-2xl font-bold">${solution.totalCost.toFixed(2)}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Purchase Cost</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{solution.ownedTimbersUsed}</div>
-                  <div className="text-sm text-muted-foreground">Owned Used</div>
+                  <div className="text-xl sm:text-2xl font-bold">{solution.ownedTimbersUsed}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Owned Used</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{solution.purchasedTimbersNeeded}</div>
-                  <div className="text-sm text-muted-foreground">To Purchase</div>
+                  <div className="text-xl sm:text-2xl font-bold">{solution.purchasedTimbersNeeded}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">To Purchase</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{mmToDisplayStr(solution.totalWaste, unit)}</div>
-                  <div className="text-sm text-muted-foreground">Total Waste</div>
+                  <div className="text-xl sm:text-2xl font-bold">{mmToDisplayStr(solution.totalWaste, unit)}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Total Waste</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{mmToDisplayStr(solution.totalKerf, unit)}</div>
-                  <div className="text-sm text-muted-foreground">Kerf Used</div>
+                  <div className="text-xl sm:text-2xl font-bold">{mmToDisplayStr(solution.totalKerf, unit)}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Kerf Used</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{solution.totalTimbers}</div>
-                  <div className="text-sm text-muted-foreground">Total Timbers</div>
+                  <div className="text-xl sm:text-2xl font-bold">{solution.totalTimbers}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Total Timbers</div>
                 </div>
               </div>
 
@@ -351,12 +352,12 @@ function App() {
               <div className="space-y-3">
                 <h4 className="font-semibold">Cutting Plans:</h4>
                 {solution.plans.map((plan, index) => (
-                  <div key={index} className="p-4 border rounded-lg space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">
+                  <div key={index} className="p-3 sm:p-4 border rounded-lg space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
+                      <span className="font-medium text-sm sm:text-base">
                         Timber #{index + 1} {plan.isOwned && <span className="text-xs text-primary">(Owned)</span>}
                       </span>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-xs sm:text-sm text-muted-foreground">
                         {mmToDisplayStr(plan.timberLength, unit)} {!plan.isOwned && `@ $${plan.timberPrice.toFixed(2)}`}
                       </span>
                     </div>
@@ -364,18 +365,18 @@ function App() {
                       {plan.cuts.map((cut, cutIndex) => (
                         <span
                           key={cutIndex}
-                          className={plan.isOwned ? "px-3 py-1 bg-green-500 text-white rounded-full text-sm" : "px-3 py-1 bg-primary text-primary-foreground rounded-full text-sm"}
+                          className={plan.isOwned ? "px-2 sm:px-3 py-1 bg-green-500 text-white rounded-full text-xs sm:text-sm" : "px-2 sm:px-3 py-1 bg-primary text-primary-foreground rounded-full text-xs sm:text-sm"}
                         >
                           {mmToDisplayStr(cut, unit)}
                         </span>
                       ))}
                       {plan.kerfUsed > 0 && (
-                          <span className="px-3 py-1 bg-accent text-accent-foreground rounded-full text-sm">
+                          <span className="px-2 sm:px-3 py-1 bg-accent text-accent-foreground rounded-full text-xs sm:text-sm">
                           kerf {mmToDisplayStr(plan.kerfUsed, unit)}
                         </span>
                       )}
                       {plan.waste > 0 && (
-                          <span className="px-3 py-1 bg-destructive/20 text-destructive rounded-full text-sm">
+                          <span className="px-2 sm:px-3 py-1 bg-destructive/20 text-destructive rounded-full text-xs sm:text-sm">
                           {mmToDisplayStr(plan.waste, unit)} waste
                         </span>
                       )}
