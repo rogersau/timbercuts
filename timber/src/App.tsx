@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Trash2, Calculator, Info, Settings } from 'lucide-react'
+import { Plus, Trash2, Calculator, Info, Settings, Save, FolderOpen, FileText } from 'lucide-react'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { optimizeTimberCutting, type TimberStock, type RequiredCut, type Solution, type OwnedTimber } from '@/lib/timber-optimizer'
 import { mmToDisplayStr, mmToDisplayNumber, displayToMM } from '@/lib/units'
+import { saveProject, getAllProjects, deleteProject, type Project } from '@/lib/storage'
 import './App.css'
 
 function App() {
@@ -25,6 +26,11 @@ function App() {
   const [kerf, setKerf] = useState<number>(3)
   const [mode, setMode] = useState<'cost' | 'waste'>('cost')
   const [unit, setUnit] = useState<'mm' | 'in'>('mm')
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null)
+  const [projectName, setProjectName] = useState<string>('')
+  const [projects, setProjects] = useState<Project[]>(() => getAllProjects())
+  const [showSaveDialog, setShowSaveDialog] = useState(false)
+  const [showLoadDialog, setShowLoadDialog] = useState(false)
 
   const addTimber = () => {
     setTimbers([...timbers, { length: 0, price: 0 }])
@@ -77,6 +83,64 @@ function App() {
     }
   }
 
+  const handleSaveProject = () => {
+    if (!projectName.trim()) {
+      alert('Please enter a project name')
+      return
+    }
+    
+    const project = saveProject({
+      id: currentProjectId || undefined,
+      name: projectName,
+      timbers,
+      cuts,
+      ownedTimbers,
+      kerf,
+      mode,
+      unit
+    })
+    
+    setCurrentProjectId(project.id)
+    setProjects(getAllProjects())
+    setShowSaveDialog(false)
+    alert('Project saved successfully!')
+  }
+
+  const handleLoadProject = (project: Project) => {
+    setTimbers(project.timbers)
+    setCuts(project.cuts)
+    setOwnedTimbers(project.ownedTimbers)
+    setKerf(project.kerf)
+    setMode(project.mode)
+    setUnit(project.unit)
+    setCurrentProjectId(project.id)
+    setProjectName(project.name)
+    setShowLoadDialog(false)
+    setSolution(null)
+  }
+
+  const handleDeleteProject = (id: string) => {
+    if (confirm('Are you sure you want to delete this project?')) {
+      deleteProject(id)
+      setProjects(getAllProjects())
+      if (currentProjectId === id) {
+        setCurrentProjectId(null)
+        setProjectName('')
+      }
+    }
+  }
+
+  const handleNewProject = () => {
+    setCurrentProjectId(null)
+    setProjectName('')
+    setTimbers([{ length: 1200, price: 9.40 }])
+    setCuts([{ length: 600, quantity: 4 }])
+    setOwnedTimbers([])
+    setKerf(3)
+    setMode('cost')
+    setSolution(null)
+  }
+
   // Using conversion helpers from `src/lib/units`.
 
   return (
@@ -86,6 +150,101 @@ function App() {
         <div className="text-center space-y-2">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Cut Optimiser</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Minimise waste and cost for your timber cutting needs</p>
+          {currentProjectId && projectName && (
+            <div className="flex items-center justify-center gap-2 text-sm text-primary">
+              <FileText className="h-4 w-4" />
+              <span>Project: {projectName}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Project Management Buttons */}
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleNewProject}>
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">New Project</span>
+          </Button>
+          <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Save className="h-4 w-4" />
+                <span className="hidden sm:inline">Save Project</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Save Project</DialogTitle>
+                <DialogDescription>
+                  Save your timber cuts configuration to local storage
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Project Name</label>
+                  <Input
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    placeholder="Enter project name"
+                  />
+                </div>
+                <Button onClick={handleSaveProject} className="w-full">
+                  Save
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={showLoadDialog} onOpenChange={setShowLoadDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <FolderOpen className="h-4 w-4" />
+                <span className="hidden sm:inline">Load Project</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Load Project</DialogTitle>
+                <DialogDescription>
+                  Select a saved project to load
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-2 py-4">
+                {projects.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No saved projects. Save your current configuration to get started.
+                  </p>
+                ) : (
+                  projects.map((project) => (
+                    <div
+                      key={project.id}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent"
+                    >
+                      <div className="flex-1">
+                        <p className="font-medium">{project.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(project.updatedAt).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleLoadProject(project)}
+                        >
+                          Load
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteProject(project.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
