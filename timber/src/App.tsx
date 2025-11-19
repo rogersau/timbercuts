@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { mmToDisplayStr, mmToDisplayNumber, displayToMM } from '@/lib/units'
 import { useTimberState } from '@/hooks/useTimberState'
-import { createTimberHandlers } from '@/handlers/timberHandlers'
 import './App.css'
 
 function App() {
@@ -47,7 +46,7 @@ function App() {
     handleLoadProject,
     handleDeleteProject,
     handleNewProject,
-  } = createTimberHandlers(store)
+  } = store
 
   return (
     <TooltipProvider>
