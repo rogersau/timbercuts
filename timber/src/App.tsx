@@ -1,147 +1,53 @@
-import { useState } from 'react'
 import { Plus, Trash2, Calculator, Info, Settings, Save, FolderOpen, FileText } from 'lucide-react'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { optimizeTimberCutting, type TimberStock, type RequiredCut, type Solution, type OwnedTimber } from '@/lib/timber-optimizer'
 import { mmToDisplayStr, mmToDisplayNumber, displayToMM } from '@/lib/units'
-import { saveProject, getAllProjects, deleteProject, type Project } from '@/lib/storage'
+import { useTimberState } from '@/hooks/useTimberState'
+import { createTimberHandlers } from '@/handlers/timberHandlers'
 import './App.css'
 
 function App() {
-  const [timbers, setTimbers] = useState<TimberStock[]>([
-    { length: 1200, price: 9.40 },
-    { length: 1800, price: 14.50 },
-    { length: 2400, price: 19.20 },
-    { length: 3000, price: 23.90 },
-    { length: 3600, price: 28.70 },
-  ])
-  const [cuts, setCuts] = useState<RequiredCut[]>([
-    { length: 600, quantity: 4 },
-  ])
-  const [ownedTimbers, setOwnedTimbers] = useState<OwnedTimber[]>([])
-  const [solution, setSolution] = useState<Solution | null>(null)
-  const [kerf, setKerf] = useState<number>(3)
-  const [mode, setMode] = useState<'cost' | 'waste'>('cost')
-  const [unit, setUnit] = useState<'mm' | 'in'>('mm')
-  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null)
-  const [projectName, setProjectName] = useState<string>('')
-  const [projects, setProjects] = useState<Project[]>(() => getAllProjects())
-  const [showSaveDialog, setShowSaveDialog] = useState(false)
-  const [showLoadDialog, setShowLoadDialog] = useState(false)
+  const store = useTimberState()
+  const {
+    timbers,
+    cuts,
+    ownedTimbers,
+    solution,
+    kerf,
+    mode,
+    unit,
+    currentProjectId,
+    projectName,
+    projects,
+    showSaveDialog,
+    showLoadDialog,
+    setProjectName,
+    setShowSaveDialog,
+    setShowLoadDialog,
+    setUnit,
+    setKerf,
+    setMode,
+  } = store
 
-  const addTimber = () => {
-    setTimbers([...timbers, { length: 0, price: 0 }])
-  }
-
-  const removeTimber = (index: number) => {
-    setTimbers(timbers.filter((_, i) => i !== index))
-  }
-
-  const updateTimber = (index: number, field: keyof TimberStock, value: number) => {
-    const updated = [...timbers]
-    updated[index][field] = value
-    setTimbers(updated)
-  }
-
-  const addCut = () => {
-    setCuts([...cuts, { length: 0, quantity: 1 }])
-  }
-
-  const removeCut = (index: number) => {
-    setCuts(cuts.filter((_, i) => i !== index))
-  }
-
-  const updateCut = (index: number, field: keyof RequiredCut, value: number) => {
-    const updated = [...cuts]
-    updated[index][field] = value
-    setCuts(updated)
-  }
-
-  const addOwnedTimber = () => {
-    setOwnedTimbers([...ownedTimbers, { length: 0, quantity: 1 }])
-  }
-
-  const removeOwnedTimber = (index: number) => {
-    setOwnedTimbers(ownedTimbers.filter((_, i) => i !== index))
-  }
-
-  const updateOwnedTimber = (index: number, field: keyof OwnedTimber, value: number) => {
-    const updated = [...ownedTimbers]
-    updated[index][field] = value
-    setOwnedTimbers(updated)
-  }
-
-  const calculate = () => {
-    try {
-      const result = optimizeTimberCutting(timbers, cuts, kerf, mode, ownedTimbers)
-      setSolution(result)
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'Error calculating solution')
-    }
-  }
-
-  const handleSaveProject = () => {
-    if (!projectName.trim()) {
-      alert('Please enter a project name')
-      return
-    }
-    
-    const project = saveProject({
-      id: currentProjectId || undefined,
-      name: projectName,
-      timbers,
-      cuts,
-      ownedTimbers,
-      kerf,
-      mode,
-      unit
-    })
-    
-    setCurrentProjectId(project.id)
-    setProjects(getAllProjects())
-    setShowSaveDialog(false)
-    alert('Project saved successfully!')
-  }
-
-  const handleLoadProject = (project: Project) => {
-    setTimbers(project.timbers)
-    setCuts(project.cuts)
-    setOwnedTimbers(project.ownedTimbers)
-    setKerf(project.kerf)
-    setMode(project.mode)
-    setUnit(project.unit)
-    setCurrentProjectId(project.id)
-    setProjectName(project.name)
-    setShowLoadDialog(false)
-    setSolution(null)
-  }
-
-  const handleDeleteProject = (id: string) => {
-    if (confirm('Are you sure you want to delete this project?')) {
-      deleteProject(id)
-      setProjects(getAllProjects())
-      if (currentProjectId === id) {
-        setCurrentProjectId(null)
-        setProjectName('')
-      }
-    }
-  }
-
-  const handleNewProject = () => {
-    setCurrentProjectId(null)
-    setProjectName('')
-    setTimbers([{ length: 1200, price: 9.40 }])
-    setCuts([{ length: 600, quantity: 4 }])
-    setOwnedTimbers([])
-    setKerf(3)
-    setMode('cost')
-    setSolution(null)
-  }
-
-  // Using conversion helpers from `src/lib/units`.
+  const {
+    addTimber,
+    removeTimber,
+    updateTimber,
+    addCut,
+    removeCut,
+    updateCut,
+    addOwnedTimber,
+    removeOwnedTimber,
+    updateOwnedTimber,
+    calculate,
+    handleSaveProject,
+    handleLoadProject,
+    handleDeleteProject,
+    handleNewProject,
+  } = createTimberHandlers(store)
 
   return (
     <TooltipProvider>
