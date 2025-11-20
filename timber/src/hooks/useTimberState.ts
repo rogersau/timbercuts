@@ -52,8 +52,13 @@ type Action =
   | { type: 'SET_SHOW_LOAD_DIALOG'; show: boolean }
   | { type: 'RESET_TO_NEW_PROJECT' }
 
+/**
+ * Reducer function to handle state updates for the timber optimizer.
+ * Manages stock, cuts, owned timber, settings, and project state.
+ */
 function reducer(state: State, action: Action): State {
   switch (action.type) {
+    // --- Timber Stock Management ---
     case 'ADD_TIMBER':
       return { ...state, timbers: [...state.timbers, { length: 0, price: 0 }] }
     case 'REMOVE_TIMBER':
@@ -63,6 +68,8 @@ function reducer(state: State, action: Action): State {
       updated[action.index] = { ...updated[action.index], [action.field]: action.value }
       return { ...state, timbers: updated }
     }
+
+    // --- Required Cuts Management ---
     case 'ADD_CUT':
       return { ...state, cuts: [...state.cuts, { length: 0, quantity: 1 }] }
     case 'REMOVE_CUT':
@@ -72,6 +79,8 @@ function reducer(state: State, action: Action): State {
       updated[action.index] = { ...updated[action.index], [action.field]: action.value }
       return { ...state, cuts: updated }
     }
+
+    // --- Owned Timber Management ---
     case 'ADD_OWNED':
       return { ...state, ownedTimbers: [...state.ownedTimbers, { length: 0, quantity: 1 }] }
     case 'REMOVE_OWNED':
@@ -81,6 +90,8 @@ function reducer(state: State, action: Action): State {
       updated[action.index] = { ...updated[action.index], [action.field]: action.value }
       return { ...state, ownedTimbers: updated }
     }
+
+    // --- Settings & Solution ---
     case 'SET_SOLUTION':
       return { ...state, solution: action.solution }
     case 'SET_KERF':
@@ -89,6 +100,8 @@ function reducer(state: State, action: Action): State {
       return { ...state, mode: action.mode }
     case 'SET_UNIT':
       return { ...state, unit: action.unit }
+
+    // --- Project Management ---
     case 'SET_PROJECT_NAME':
       return { ...state, projectName: action.name }
     case 'SET_PROJECT_ID':
@@ -99,12 +112,16 @@ function reducer(state: State, action: Action): State {
       return { ...state, showSaveDialog: action.show }
     case 'SET_SHOW_LOAD_DIALOG':
       return { ...state, showLoadDialog: action.show }
+    
+    // --- Bulk Updates (Loading Projects) ---
     case 'SET_TIMBERS':
       return { ...state, timbers: action.timbers }
     case 'SET_CUTS':
       return { ...state, cuts: action.cuts }
     case 'SET_OWNED_TIMBERS':
       return { ...state, ownedTimbers: action.ownedTimbers }
+    
+    // --- Reset ---
     case 'RESET_TO_NEW_PROJECT':
       return {
         ...state,

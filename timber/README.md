@@ -1,73 +1,69 @@
-# React + TypeScript + Vite
+# Timber Cuts - Cut Optimiser
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A powerful web-based tool to optimize timber cutting, minimizing waste and cost for woodworking projects.
 
-Currently, two official plugins are available:
+## Project Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Timber Cuts is a React application designed to help woodworkers, carpenters, and DIY enthusiasts plan their cuts efficiently. By inputting available stock lengths and required cut lists, the application calculates the optimal cutting pattern to reduce material waste and overall cost.
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Optimization Modes:**
+  - **Cost Mode:** Prioritizes using the cheapest combination of timber lengths.
+  - **Waste Mode:** Prioritizes using the least amount of material (tightest fit).
+- **Owned Timber:** Input timber you already have on hand to use it before purchasing new stock.
+- **Project Management:** Create, save, and load multiple projects.
+- **Unit Support:** Switch seamlessly between Millimeters (mm) and Inches (in).
+- **Kerf Adjustment:** Account for the blade width (kerf) in calculations.
+- **Visual Results:** Clear visual representation of how to cut each board.
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- [Node.js](https://nodejs.org/) (v18 or higher recommended)
+- [pnpm](https://pnpm.io/) (recommended package manager)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd timbercuts/timber
+   ```
+
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+### Running the Application
+
+Start the development server:
+
+```bash
+pnpm dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open your browser and navigate to `http://localhost:5173` (or the port shown in your terminal).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Running Tests
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+This project uses Vitest for unit testing the optimization logic.
+
+```bash
+pnpm test:run
 ```
+
+## Tech Stack
+
+- **Frontend Framework:** [React](https://react.dev/)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Build Tool:** [Vite](https://vitejs.dev/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components:** [Radix UI](https://www.radix-ui.com/) & [Lucide React](https://lucide.dev/)
+- **Testing:** [Vitest](https://vitest.dev/)
+
+## License
+
+[MIT](LICENSE)

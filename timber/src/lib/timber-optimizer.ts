@@ -37,6 +37,16 @@ export interface OwnedTimber {
   quantity: number; // how many of this length the user owns
 }
 
+/**
+ * Calculates the optimal cutting plan for a set of required cuts using available timber stock.
+ * 
+ * @param availableTimbers - List of available timber lengths and prices to purchase.
+ * @param requiredCuts - List of required cut lengths and quantities.
+ * @param kerf - The width of the saw blade (material lost per cut). Defaults to 0.
+ * @param mode - Optimization mode: 'cost' (cheapest) or 'waste' (least material used). Defaults to 'cost'.
+ * @param ownedTimbers - List of timber already owned by the user. Defaults to [].
+ * @returns A Solution object containing the cutting plans and summary statistics.
+ */
 export function optimizeTimberCutting(
   availableTimbers: TimberStock[],
   requiredCuts: RequiredCut[],
@@ -198,7 +208,12 @@ export function optimizeTimberCutting(
 }
 
 /**
- * Fits pieces into a timber using First Fit Decreasing
+ * Fits pieces into a timber using First Fit Decreasing.
+ * 
+ * @param timberLength - The length of the timber to fit pieces into.
+ * @param pieces - The list of piece lengths to fit.
+ * @param kerf - The kerf width.
+ * @returns An object containing the fitted cuts, waste, and kerf used.
  */
 function fitPiecesToTimber(
   timberLength: number,
