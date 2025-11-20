@@ -1,15 +1,13 @@
-import { Calculator, FileText } from 'lucide-react'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-// mmToDisplayNumber moved to subcomponents
-import SettingsDialog from '@/components/SettingsDialog'
 import SolutionCard from '@/components/SolutionCard'
 import { useTimberState } from '@/hooks/useTimberState'
 import TimberStockList from '@/components/TimberStockList'
 import OwnedTimberList from '@/components/OwnedTimberList'
 import CutsList from '@/components/CutsList'
 import ProjectDialogs from '@/components/ProjectDialogs'
+import Layout from '@/components/Layout'
+import ControlPanel from '@/components/ControlPanel'
 import './App.css'
 
 function App() {
@@ -19,6 +17,7 @@ function App() {
     cuts,
     ownedTimbers,
     solution,
+    isCalculating,
     kerf,
     mode,
     unit,
@@ -54,19 +53,7 @@ function App() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Cut Optimiser</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Minimise waste and cost for your timber cutting needs</p>
-          {currentProjectId && projectName && (
-            <div className="flex items-center justify-center gap-2 text-sm text-primary">
-              <FileText className="h-4 w-4" />
-              <span>Project: {projectName}</span>
-            </div>
-          )}
-        </div>
-
+      <Layout projectName={projectName} currentProjectId={currentProjectId}>
         {/* Project Management Buttons */}
         <ProjectDialogs
           projectName={projectName}
@@ -97,63 +84,61 @@ function App() {
                 removeTimber={removeTimber}
                 updateTimber={updateTimber}
               />
-
             </CardContent>
           </Card>
-        {/* Timber On Hand */}
+
+          {/* Timber On Hand */}
+          <Card>
+            <CardHeader>
+              <CardTitle>On Hand</CardTitle>
+              <CardDescription>Enter material you already own (optional)</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <OwnedTimberList
+                ownedTimbers={ownedTimbers}
+                unit={unit}
+                addOwnedTimber={addOwnedTimber}
+                removeOwnedTimber={removeOwnedTimber}
+                updateOwnedTimber={updateOwnedTimber}
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Required Cuts */}
         <Card>
           <CardHeader>
-            <CardTitle>On Hand</CardTitle>
-            <CardDescription>Enter material you already own (optional)</CardDescription>
+            <CardTitle>Required Cuts</CardTitle>
+            <CardDescription>Enter lengths you need and quantities</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <OwnedTimberList
-              ownedTimbers={ownedTimbers}
+            <CutsList
+              cuts={cuts}
               unit={unit}
-              addOwnedTimber={addOwnedTimber}
-              removeOwnedTimber={removeOwnedTimber}
-              updateOwnedTimber={updateOwnedTimber}
+              addCut={addCut}
+              removeCut={removeCut}
+              updateCut={updateCut}
             />
           </CardContent>
         </Card>
 
-        </div>
-
-
-                  {/* Required Cuts */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Required Cuts</CardTitle>
-              <CardDescription>Enter lengths you need and quantities</CardDescription>
-            </CardHeader>
-              <CardContent className="space-y-3">
-                <CutsList
-                  cuts={cuts}
-                  unit={unit}
-                  addCut={addCut}
-                  removeCut={removeCut}
-                  updateCut={updateCut}
-                />
-              </CardContent>
-          </Card>
-
-        {/* Calculate Button with Settings */}
-        <div className="flex flex-wrap justify-center gap-3">
-          <Button onClick={calculate} size="lg" className="flex-1 sm:flex-initial sm:min-w-48">
-            <Calculator className="h-5 w-5" />
-            <span className="hidden sm:inline">Calculate Optimal Solution</span>
-            <span className="sm:hidden">Calculate</span>
-          </Button>
-          
-          <SettingsDialog kerf={kerf} setKerf={setKerf} unit={unit} setUnit={setUnit} mode={mode} setMode={setMode} />
-        </div>
+        {/* Control Panel */}
+        <ControlPanel 
+          isCalculating={isCalculating}
+          calculate={calculate}
+          kerf={kerf}
+          setKerf={setKerf}
+          unit={unit}
+          setUnit={setUnit}
+          mode={mode}
+          setMode={setMode}
+        />
 
         {/* Results */}
         {solution && (
           <SolutionCard solution={solution} unit={unit} />
         )}
-      </div>
-      </div>
+      </Layout>
     </TooltipProvider>
   )
 }

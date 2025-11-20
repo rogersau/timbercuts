@@ -21,25 +21,25 @@ This document outlines recommended improvements for the Timber Cuts project to e
 ## 2. Architecture & Performance
 
 ### Web Worker for Optimization
-**Current Status:** `optimizeTimberCutting` runs on the main thread. Large calculations could freeze the UI.
+**Current Status:** Done. `optimizeTimberCutting` runs in a Web Worker.
 **Action:**
-- Move `optimizeTimberCutting` to a Web Worker.
-- Use `comlink` or native `Worker` API to communicate with the main thread.
-- Add a loading state to the UI while calculating.
+- [x] Move `optimizeTimberCutting` to a Web Worker.
+- [x] Use `comlink` or native `Worker` API to communicate with the main thread.
+- [x] Add a loading state to the UI while calculating.
 
 ### State Management Refactoring
-**Current Status:** `useTimberState` is a large custom hook with a complex reducer.
+**Current Status:** Reducer split, Context API implemented.
 **Action:**
-- **Split Reducer:** Break down the reducer into smaller slice reducers (e.g., `timberReducer`, `projectReducer`).
-- **Context API:** Wrap the application in a `TimberProvider` to avoid prop drilling if the app grows.
-- **Consider Libraries:** If state complexity increases, evaluate Zustand or Redux Toolkit.
+- [x] **Split Reducer:** Break down the reducer into smaller slice reducers (e.g., `timberReducer`, `projectReducer`).
+- [x] **Context API:** Wrap the application in a `TimberProvider` to avoid prop drilling if the app grows.
+- [ ] **Consider Libraries:** If state complexity increases, evaluate Zustand or Redux Toolkit.
 
 ### Component Decomposition
-**Current Status:** `App.tsx` handles layout, state, and rendering of many sub-components.
+**Current Status:** Done. `App.tsx` is refactored.
 **Action:**
-- Create a `Layout` component for the page structure (header, container, footer).
-- Move the "Calculate" button and "Settings" dialog into a `ControlPanel` component.
-- Extract the "Results" section into a dedicated container component.
+- [x] Create a `Layout` component for the page structure (header, container, footer).
+- [x] Move the "Calculate" button and "Settings" dialog into a `ControlPanel` component.
+- [x] Extract the "Results" section into a dedicated container component.
 
 ## 3. Testing
 
