@@ -71,6 +71,7 @@ export function TimberStockList({
         <Button onClick={addTimber} variant="outline" className="w-full">
           <Plus className="h-4 w-4" />
           <span className="hidden sm:inline">Add Timber</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       </div>
     </div>
