@@ -31,17 +31,20 @@ jobs:
         with:
           node-version: 20
           cache: 'pnpm'
+          cache-dependency-path: timber/pnpm-lock.yaml
 
       - name: Install dependencies
+        working-directory: timber
         run: pnpm install
 
       - name: Build
+        working-directory: timber
         run: pnpm build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: timber/dist
 
   deploy:
     environment:
