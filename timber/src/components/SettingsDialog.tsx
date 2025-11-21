@@ -18,7 +18,7 @@ export function SettingsDialog({ kerf, setKerf, unit, setUnit, mode, setMode }: 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="lg" className="flex-1 sm:flex-initial">
+        <Button variant="outline" size="sm">
           <Settings className="h-5 w-5" />
           <span className="hidden sm:inline">Settings</span>
         </Button>

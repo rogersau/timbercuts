@@ -1,37 +1,59 @@
-import InputGroup from '@/components/ui/input-group'
-import { Button } from '@/components/ui/button'
-import { Trash2, Plus } from 'lucide-react'
-import { type RequiredCut } from '@/lib/timber-optimizer'
-import { mmToDisplayNumber, displayToMM } from '@/lib/units'
+import {
+  InputGroup,
+  InputGroupInput,
+  InputGroupAddon,
+  InputGroupText,
+} from "@/components/ui/input-group";
+import { Button } from "@/components/ui/button";
+import { Trash2, Plus } from "lucide-react";
+import { type RequiredCut } from "@/lib/timber-optimizer";
+import { mmToDisplayNumber, displayToMM } from "@/lib/units";
 
 type Props = {
-  cuts: RequiredCut[]
-  unit: 'mm'|'in'
-  addCut: () => void
-  removeCut: (idx: number) => void
-  updateCut: (idx: number, field: keyof RequiredCut, value: number) => void
-}
+  cuts: RequiredCut[];
+  unit: "mm" | "in";
+  addCut: () => void;
+  removeCut: (idx: number) => void;
+  updateCut: (idx: number, field: keyof RequiredCut, value: number) => void;
+};
 
 export function CutsList({ cuts, unit, addCut, removeCut, updateCut }: Props) {
   return (
     <div>
       {cuts.map((cut, index) => (
-        <div key={index} className="flex gap-2 items-center">
-          <InputGroup
-            type="number"
-            placeholder={`Length (${unit})`}
-            value={cut.length ? mmToDisplayNumber(cut.length, unit) : ''}
-            onChange={(e) => updateCut(index, 'length', displayToMM(Number(e.target.value), unit))}
-            className="flex-1"
-            suffix={unit}
-          />
-          <div className="w-24">
-            <InputGroup
-              placeholder="Qty"
-              value={cut.quantity || ''}
-              onChange={(e) => updateCut(index, 'quantity', Number(e.target.value))}
+        <div key={index} className="flex gap-2 items-center py-1">
+          <InputGroup>
+            <InputGroupInput
               type="number"
+              placeholder={`Length (${unit})`}
+              value={cut.length ? mmToDisplayNumber(cut.length, unit) : ""}
+              onChange={(e) =>
+                updateCut(
+                  index,
+                  "length",
+                  displayToMM(Number(e.target.value), unit)
+                )
+              }
+              className="flex-1"
             />
+            <InputGroupAddon align="inline-end">
+              <InputGroupText>{unit}</InputGroupText>
+            </InputGroupAddon>
+          </InputGroup>
+          <div className="w-24">
+            <InputGroup>
+              <InputGroupAddon>
+                <InputGroupText>x</InputGroupText>
+              </InputGroupAddon>
+              <InputGroupInput
+                placeholder="Qty"
+                value={cut.quantity || ""}
+                onChange={(e) =>
+                  updateCut(index, "quantity", Number(e.target.value))
+                }
+                type="number"
+              />
+            </InputGroup>
           </div>
           <Button
             variant="outline"
@@ -51,7 +73,7 @@ export function CutsList({ cuts, unit, addCut, removeCut, updateCut }: Props) {
         </Button>
       </div>
     </div>
-  )
+  );
 }
 
-export default CutsList
+export default CutsList;

@@ -67,6 +67,12 @@ function App() {
           handleLoadProject={handleLoadProject}
           handleDeleteProject={handleDeleteProject}
           handleNewProject={handleNewProject}
+          kerf={kerf}
+          setKerf={setKerf}
+          unit={unit}
+          setUnit={setUnit}
+          mode={mode}
+          setMode={setMode}
         />
 
         <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
@@ -126,12 +132,6 @@ function App() {
         <ControlPanel 
           isCalculating={isCalculating}
           calculate={calculate}
-          kerf={kerf}
-          setKerf={setKerf}
-          unit={unit}
-          setUnit={setUnit}
-          mode={mode}
-          setMode={setMode}
         />
 
         {/* Results */}

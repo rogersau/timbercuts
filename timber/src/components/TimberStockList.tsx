@@ -1,5 +1,5 @@
 // JSX runtime import not required
-import InputGroup from '@/components/ui/input-group'
+import {InputGroup, InputGroupInput, InputGroupAddon, InputGroupText} from '@/components/ui/input-group'
 import { Button } from '@/components/ui/button'
 import { Trash2, Plus } from 'lucide-react'
 import { type TimberStock } from '@/lib/timber-optimizer'
@@ -17,25 +17,22 @@ export function TimberStockList({ timbers, unit, addTimber, removeTimber, update
   return (
     <div>
       {timbers.map((timber, index) => (
-        <div key={index} className="flex gap-2 items-center">
+        <div key={index} className="flex gap-2 items-center py-1">
           <div className="flex-1">
-            <InputGroup
-              placeholder={`Length (${unit})`}
-              value={timber.length ? mmToDisplayNumber(timber.length, unit) : ''}
-              onChange={(e) => updateTimber(index, 'length', displayToMM(Number(e.target.value), unit))}
-              suffix={unit}
-              type="number"
-            />
+            <InputGroup>
+             <InputGroupInput value={timber.length ? mmToDisplayNumber(timber.length, unit) : ''} placeholder={`Length (${unit})`} onChange={(e) => updateTimber(index, 'length', displayToMM(Number(e.target.value), unit))}/>
+             <InputGroupAddon align="inline-end">
+               <InputGroupText>{unit}</InputGroupText>
+             </InputGroupAddon>
+            </InputGroup>
           </div>
           <div className="w-36">
-            <InputGroup
-              prefix="$"
-              placeholder="Price"
-              value={typeof timber.price === 'number' ? timber.price.toFixed(2) : ''}
-              onChange={(e) => updateTimber(index, 'price', Number(e.target.value))}
-              type="number"
-              step={0.01}
-            />
+            <InputGroup>
+              <InputGroupAddon>
+              <InputGroupText>$</InputGroupText>
+              </InputGroupAddon>
+              <InputGroupInput value={typeof timber.price === 'number' ? timber.price.toFixed(2) : ''} placeholder="Price" onChange={(e) => updateTimber(index, 'price', Number(e.target.value))} type="number" step={0.01}/>
+            </InputGroup>
           </div>
           <Button
             variant="outline"

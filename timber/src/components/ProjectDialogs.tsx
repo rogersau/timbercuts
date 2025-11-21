@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { type Project } from '@/lib/storage'
+import { SettingsDialog } from '@/components/SettingsDialog'
 
 type Props = {
   projectName: string
@@ -16,10 +17,16 @@ type Props = {
   handleLoadProject: (p: Project) => void
   handleDeleteProject: (id: string) => void
   handleNewProject: () => void
+  kerf: number
+  setKerf: (kerf: number) => void
+  unit: 'mm'|'in'
+  setUnit: (unit: 'mm'|'in') => void
+  mode: 'cost'|'waste'
+  setMode: (mode: 'cost'|'waste') => void
 }
 
 export function ProjectDialogs(props: Props) {
-  const { projectName, setProjectName, projects, showSaveDialog, setShowSaveDialog, showLoadDialog, setShowLoadDialog, handleSaveProject, handleLoadProject, handleDeleteProject, handleNewProject } = props
+  const { projectName, setProjectName, projects, showSaveDialog, setShowSaveDialog, showLoadDialog, setShowLoadDialog, handleSaveProject, handleLoadProject, handleDeleteProject, handleNewProject, kerf, setKerf, unit, setUnit, mode, setMode } = props
   return (
     <div className="flex flex-wrap justify-center gap-2">
       <Button variant="outline" size="sm" onClick={handleNewProject}>
@@ -83,6 +90,8 @@ export function ProjectDialogs(props: Props) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <SettingsDialog kerf={kerf} setKerf={setKerf} unit={unit} setUnit={setUnit} mode={mode} setMode={setMode} />
     </div>
   )
 }

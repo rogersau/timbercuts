@@ -1,27 +1,14 @@
 import { Calculator } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { SettingsDialog } from '@/components/SettingsDialog'
 
 interface ControlPanelProps {
   isCalculating: boolean
   calculate: () => void
-  kerf: number
-  setKerf: (kerf: number) => void
-  unit: 'mm' | 'in'
-  setUnit: (unit: 'mm' | 'in') => void
-  mode: 'cost' | 'waste'
-  setMode: (mode: 'cost' | 'waste') => void
 }
 
 export default function ControlPanel({
   isCalculating,
-  calculate,
-  kerf,
-  setKerf,
-  unit,
-  setUnit,
-  mode,
-  setMode
+  calculate
 }: ControlPanelProps) {
   return (
     <div className="flex flex-wrap justify-center gap-3">
@@ -40,15 +27,6 @@ export default function ControlPanel({
           </>
         )}
       </Button>
-      
-      <SettingsDialog 
-        kerf={kerf} 
-        setKerf={setKerf} 
-        unit={unit} 
-        setUnit={setUnit} 
-        mode={mode} 
-        setMode={setMode} 
-      />
     </div>
   )
 }
