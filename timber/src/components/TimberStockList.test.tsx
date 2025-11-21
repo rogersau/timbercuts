@@ -6,7 +6,7 @@ import { type TimberStock } from '@/lib/timber-optimizer'
 describe('TimberStockList', () => {
   const mockTimbers: TimberStock[] = [
     { length: 2400, price: 10 },
-    { length: 1200, price: 5 }
+    { length: 1200, price: 5 },
   ]
 
   const mockProps = {
@@ -14,7 +14,7 @@ describe('TimberStockList', () => {
     unit: 'mm' as const,
     addTimber: vi.fn(),
     removeTimber: vi.fn(),
-    updateTimber: vi.fn()
+    updateTimber: vi.fn(),
   }
 
   it('renders all timbers', () => {
@@ -34,7 +34,9 @@ describe('TimberStockList', () => {
 
   it('calls removeTimber when delete button is clicked', () => {
     render(<TimberStockList {...mockProps} />)
-    const deleteButtons = screen.getAllByRole('button').filter(btn => btn.querySelector('svg.lucide-trash-2'))
+    const deleteButtons = screen
+      .getAllByRole('button')
+      .filter((btn) => btn.querySelector('svg.lucide-trash-2'))
     fireEvent.click(deleteButtons[0])
     expect(mockProps.removeTimber).toHaveBeenCalledWith(0)
   })

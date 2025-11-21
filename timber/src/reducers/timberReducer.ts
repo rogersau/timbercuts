@@ -1,4 +1,9 @@
-import { type TimberStock, type RequiredCut, type Solution, type OwnedTimber } from '@/lib/timber-optimizer'
+import {
+  type TimberStock,
+  type RequiredCut,
+  type Solution,
+  type OwnedTimber,
+} from '@/lib/timber-optimizer'
 import { type Project } from '@/lib/storage'
 
 export type State = {
@@ -50,7 +55,7 @@ export const defaultTimbers: TimberStock[] = [
   { length: 3600, price: 28.7 },
 ]
 
-export const defaultCuts: RequiredCut[] = [ { length: 600, quantity: 4 } ]
+export const defaultCuts: RequiredCut[] = [{ length: 600, quantity: 4 }]
 
 export function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -108,7 +113,7 @@ export function reducer(state: State, action: Action): State {
       return { ...state, showSaveDialog: action.show }
     case 'SET_SHOW_LOAD_DIALOG':
       return { ...state, showLoadDialog: action.show }
-    
+
     // --- Bulk Updates (Loading Projects) ---
     case 'SET_TIMBERS':
       return { ...state, timbers: action.timbers }
@@ -116,7 +121,7 @@ export function reducer(state: State, action: Action): State {
       return { ...state, cuts: action.cuts }
     case 'SET_OWNED_TIMBERS':
       return { ...state, ownedTimbers: action.ownedTimbers }
-    
+
     // --- Reset ---
     case 'RESET_TO_NEW_PROJECT':
       return {
@@ -130,7 +135,7 @@ export function reducer(state: State, action: Action): State {
         mode: 'cost',
         solution: null,
       }
-    
+
     case 'SET_IS_CALCULATING':
       return { ...state, isCalculating: action.isCalculating }
 

@@ -36,7 +36,7 @@ export function getAllProjects(): Project[] {
  */
 export function getProject(id: string): Project | null {
   const projects = getAllProjects()
-  return projects.find(p => p.id === id) || null
+  return projects.find((p) => p.id === id) || null
 }
 
 /**
@@ -46,19 +46,21 @@ export function getProject(id: string): Project | null {
  * @param project - The project data to save.
  * @returns The saved Project object.
  */
-export function saveProject(project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Project {
+export function saveProject(
+  project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }
+): Project {
   const projects = getAllProjects()
   const now = Date.now()
-  
+
   if (project.id) {
     // Update existing project
-    const index = projects.findIndex(p => p.id === project.id)
+    const index = projects.findIndex((p) => p.id === project.id)
     if (index !== -1) {
       projects[index] = {
         ...project,
         id: project.id,
         createdAt: projects[index].createdAt,
-        updatedAt: now
+        updatedAt: now,
       } as Project
     } else {
       // ID provided but not found, create new
@@ -66,7 +68,7 @@ export function saveProject(project: Omit<Project, 'id' | 'createdAt' | 'updated
         ...project,
         id: project.id,
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
       } as Project
       projects.push(newProject)
     }
@@ -76,13 +78,13 @@ export function saveProject(project: Omit<Project, 'id' | 'createdAt' | 'updated
       ...project,
       id: crypto.randomUUID(),
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     } as Project
     projects.push(newProject)
   }
-  
+
   localStorage.setItem(STORAGE_KEY, JSON.stringify(projects))
-  return projects.find(p => p.id === project.id) || projects[projects.length - 1]
+  return projects.find((p) => p.id === project.id) || projects[projects.length - 1]
 }
 
 /**
@@ -92,12 +94,12 @@ export function saveProject(project: Omit<Project, 'id' | 'createdAt' | 'updated
  */
 export function deleteProject(id: string): boolean {
   const projects = getAllProjects()
-  const filtered = projects.filter(p => p.id !== id)
-  
+  const filtered = projects.filter((p) => p.id !== id)
+
   if (filtered.length === projects.length) {
     return false // Project not found
   }
-  
+
   localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered))
   return true
 }

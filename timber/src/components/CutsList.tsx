@@ -3,19 +3,19 @@ import {
   InputGroupInput,
   InputGroupAddon,
   InputGroupText,
-} from "@/components/ui/input-group";
-import { Button } from "@/components/ui/button";
-import { Trash2, Plus } from "lucide-react";
-import { type RequiredCut } from "@/lib/timber-optimizer";
-import { mmToDisplayNumber, displayToMM } from "@/lib/units";
+} from '@/components/ui/input-group'
+import { Button } from '@/components/ui/button'
+import { Trash2, Plus } from 'lucide-react'
+import { type RequiredCut } from '@/lib/timber-optimizer'
+import { mmToDisplayNumber, displayToMM } from '@/lib/units'
 
 type Props = {
-  cuts: RequiredCut[];
-  unit: "mm" | "in";
-  addCut: () => void;
-  removeCut: (idx: number) => void;
-  updateCut: (idx: number, field: keyof RequiredCut, value: number) => void;
-};
+  cuts: RequiredCut[]
+  unit: 'mm' | 'in'
+  addCut: () => void
+  removeCut: (idx: number) => void
+  updateCut: (idx: number, field: keyof RequiredCut, value: number) => void
+}
 
 export function CutsList({ cuts, unit, addCut, removeCut, updateCut }: Props) {
   return (
@@ -26,13 +26,9 @@ export function CutsList({ cuts, unit, addCut, removeCut, updateCut }: Props) {
             <InputGroupInput
               type="number"
               placeholder={`Length (${unit})`}
-              value={cut.length ? mmToDisplayNumber(cut.length, unit) : ""}
+              value={cut.length ? mmToDisplayNumber(cut.length, unit) : ''}
               onChange={(e) =>
-                updateCut(
-                  index,
-                  "length",
-                  displayToMM(Number(e.target.value), unit)
-                )
+                updateCut(index, 'length', displayToMM(Number(e.target.value), unit))
               }
               className="flex-1"
             />
@@ -47,10 +43,8 @@ export function CutsList({ cuts, unit, addCut, removeCut, updateCut }: Props) {
               </InputGroupAddon>
               <InputGroupInput
                 placeholder="Qty"
-                value={cut.quantity || ""}
-                onChange={(e) =>
-                  updateCut(index, "quantity", Number(e.target.value))
-                }
+                value={cut.quantity || ''}
+                onChange={(e) => updateCut(index, 'quantity', Number(e.target.value))}
                 type="number"
               />
             </InputGroup>
@@ -73,7 +67,7 @@ export function CutsList({ cuts, unit, addCut, removeCut, updateCut }: Props) {
         </Button>
       </div>
     </div>
-  );
+  )
 }
 
-export default CutsList;
+export default CutsList

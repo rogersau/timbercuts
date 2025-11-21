@@ -1,6 +1,13 @@
 import { Info, Settings } from 'lucide-react'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { mmToDisplayNumber, displayToMM } from '@/lib/units'
@@ -8,10 +15,10 @@ import { mmToDisplayNumber, displayToMM } from '@/lib/units'
 type Props = {
   kerf: number
   setKerf: (kerf: number) => void
-  unit: 'mm'|'in'
-  setUnit: (unit: 'mm'|'in') => void
-  mode: 'cost'|'waste'
-  setMode: (mode: 'cost'|'waste') => void
+  unit: 'mm' | 'in'
+  setUnit: (unit: 'mm' | 'in') => void
+  mode: 'cost' | 'waste'
+  setMode: (mode: 'cost' | 'waste') => void
 }
 
 export function SettingsDialog({ kerf, setKerf, unit, setUnit, mode, setMode }: Props) {
@@ -26,7 +33,9 @@ export function SettingsDialog({ kerf, setKerf, unit, setUnit, mode, setMode }: 
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Optimization Settings</DialogTitle>
-          <DialogDescription>Configure kerf and optimization mode for your cutting plan</DialogDescription>
+          <DialogDescription>
+            Configure kerf and optimization mode for your cutting plan
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-6 py-4">
           <div className="space-y-2">
@@ -36,7 +45,10 @@ export function SettingsDialog({ kerf, setKerf, unit, setUnit, mode, setMode }: 
                 <TooltipTrigger asChild>
                   <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
-                <TooltipContent>Kerf: the width of material removed by the saw blade during each cut. Every cut consumes this amount. Values are shown in the selected measurement unit.</TooltipContent>
+                <TooltipContent>
+                  Kerf: the width of material removed by the saw blade during each cut. Every cut
+                  consumes this amount. Values are shown in the selected measurement unit.
+                </TooltipContent>
               </Tooltip>
             </div>
             <Input
@@ -56,14 +68,24 @@ export function SettingsDialog({ kerf, setKerf, unit, setUnit, mode, setMode }: 
                 <TooltipTrigger asChild>
                   <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
-                <TooltipContent>Select the unit for measurements (mm or inches). Internally values are stored as mm.</TooltipContent>
+                <TooltipContent>
+                  Select the unit for measurements (mm or inches). Internally values are stored as
+                  mm.
+                </TooltipContent>
               </Tooltip>
             </div>
-            <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={unit} onChange={(e) => setUnit(e.target.value as 'mm'|'in')}>
+            <select
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={unit}
+              onChange={(e) => setUnit(e.target.value as 'mm' | 'in')}
+            >
               <option value="mm">Metric (mm)</option>
               <option value="in">Imperial (in)</option>
             </select>
-            <p className="text-sm text-muted-foreground">Current: <strong className="text-foreground">{unit === 'mm' ? 'mm' : 'inches'}</strong></p>
+            <p className="text-sm text-muted-foreground">
+              Current:{' '}
+              <strong className="text-foreground">{unit === 'mm' ? 'mm' : 'inches'}</strong>
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -73,14 +95,26 @@ export function SettingsDialog({ kerf, setKerf, unit, setUnit, mode, setMode }: 
                 <TooltipTrigger asChild>
                   <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
-                <TooltipContent>"Lowest total cost" minimizes purchase cost; "Least wastage" minimizes leftover material.</TooltipContent>
+                <TooltipContent>
+                  "Lowest total cost" minimizes purchase cost; "Least wastage" minimizes leftover
+                  material.
+                </TooltipContent>
               </Tooltip>
             </div>
-            <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={mode} onChange={(e) => setMode(e.target.value as 'cost'|'waste')}>
+            <select
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={mode}
+              onChange={(e) => setMode(e.target.value as 'cost' | 'waste')}
+            >
               <option value="cost">Lowest total cost</option>
               <option value="waste">Least wastage</option>
             </select>
-            <p className="text-sm text-muted-foreground">Current: <strong className="text-foreground">{mode === 'cost' ? 'Lowest total cost' : 'Least wastage'}</strong></p>
+            <p className="text-sm text-muted-foreground">
+              Current:{' '}
+              <strong className="text-foreground">
+                {mode === 'cost' ? 'Lowest total cost' : 'Least wastage'}
+              </strong>
+            </p>
           </div>
         </div>
       </DialogContent>

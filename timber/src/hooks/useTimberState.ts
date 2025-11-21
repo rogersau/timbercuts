@@ -1,5 +1,10 @@
 import { useReducer, useMemo, useCallback, useEffect, useRef } from 'react'
-import { type TimberStock, type RequiredCut, type Solution, type OwnedTimber } from '@/lib/timber-optimizer'
+import {
+  type TimberStock,
+  type RequiredCut,
+  type Solution,
+  type OwnedTimber,
+} from '@/lib/timber-optimizer'
 import { getAllProjects, saveProject, deleteProject, type Project } from '@/lib/storage'
 import OptimizerWorker from '@/workers/optimizer.worker?worker'
 import { reducer, defaultTimbers, defaultCuts } from '@/reducers/timberReducer'
@@ -42,29 +47,71 @@ export function useTimberState() {
 
   // Action helpers
   const addTimber = useCallback(() => dispatch({ type: 'ADD_TIMBER' }), [])
-  const removeTimber = useCallback((index: number) => dispatch({ type: 'REMOVE_TIMBER', index }), [])
-  const updateTimber = useCallback((index: number, field: keyof TimberStock, value: number) => dispatch({ type: 'UPDATE_TIMBER', index, field, value }), [])
+  const removeTimber = useCallback(
+    (index: number) => dispatch({ type: 'REMOVE_TIMBER', index }),
+    []
+  )
+  const updateTimber = useCallback(
+    (index: number, field: keyof TimberStock, value: number) =>
+      dispatch({ type: 'UPDATE_TIMBER', index, field, value }),
+    []
+  )
 
   const addCut = useCallback(() => dispatch({ type: 'ADD_CUT' }), [])
   const removeCut = useCallback((index: number) => dispatch({ type: 'REMOVE_CUT', index }), [])
-  const updateCut = useCallback((index: number, field: keyof RequiredCut, value: number) => dispatch({ type: 'UPDATE_CUT', index, field, value }), [])
+  const updateCut = useCallback(
+    (index: number, field: keyof RequiredCut, value: number) =>
+      dispatch({ type: 'UPDATE_CUT', index, field, value }),
+    []
+  )
 
   const addOwnedTimber = useCallback(() => dispatch({ type: 'ADD_OWNED' }), [])
-  const removeOwnedTimber = useCallback((index: number) => dispatch({ type: 'REMOVE_OWNED', index }), [])
-  const updateOwnedTimber = useCallback((index: number, field: keyof OwnedTimber, value: number) => dispatch({ type: 'UPDATE_OWNED', index, field, value }), [])
+  const removeOwnedTimber = useCallback(
+    (index: number) => dispatch({ type: 'REMOVE_OWNED', index }),
+    []
+  )
+  const updateOwnedTimber = useCallback(
+    (index: number, field: keyof OwnedTimber, value: number) =>
+      dispatch({ type: 'UPDATE_OWNED', index, field, value }),
+    []
+  )
 
-  const setSolution = useCallback((solution: Solution | null) => dispatch({ type: 'SET_SOLUTION', solution }), [])
+  const setSolution = useCallback(
+    (solution: Solution | null) => dispatch({ type: 'SET_SOLUTION', solution }),
+    []
+  )
   const setKerf = useCallback((kerf: number) => dispatch({ type: 'SET_KERF', kerf }), [])
   const setMode = useCallback((mode: 'cost' | 'waste') => dispatch({ type: 'SET_MODE', mode }), [])
   const setUnit = useCallback((unit: 'mm' | 'in') => dispatch({ type: 'SET_UNIT', unit }), [])
-  const setProjectName = useCallback((name: string) => dispatch({ type: 'SET_PROJECT_NAME', name }), [])
-  const setProjectId = useCallback((id: string | null) => dispatch({ type: 'SET_PROJECT_ID', id }), [])
-  const setProjects = useCallback((projects: Project[]) => dispatch({ type: 'SET_PROJECTS', projects }), [])
-  const setShowSaveDialog = useCallback((show: boolean) => dispatch({ type: 'SET_SHOW_SAVE_DIALOG', show }), [])
-  const setShowLoadDialog = useCallback((show: boolean) => dispatch({ type: 'SET_SHOW_LOAD_DIALOG', show }), [])
-  const setTimbers = useCallback((timbers: TimberStock[]) => dispatch({ type: 'SET_TIMBERS', timbers }), [])
+  const setProjectName = useCallback(
+    (name: string) => dispatch({ type: 'SET_PROJECT_NAME', name }),
+    []
+  )
+  const setProjectId = useCallback(
+    (id: string | null) => dispatch({ type: 'SET_PROJECT_ID', id }),
+    []
+  )
+  const setProjects = useCallback(
+    (projects: Project[]) => dispatch({ type: 'SET_PROJECTS', projects }),
+    []
+  )
+  const setShowSaveDialog = useCallback(
+    (show: boolean) => dispatch({ type: 'SET_SHOW_SAVE_DIALOG', show }),
+    []
+  )
+  const setShowLoadDialog = useCallback(
+    (show: boolean) => dispatch({ type: 'SET_SHOW_LOAD_DIALOG', show }),
+    []
+  )
+  const setTimbers = useCallback(
+    (timbers: TimberStock[]) => dispatch({ type: 'SET_TIMBERS', timbers }),
+    []
+  )
   const setCuts = useCallback((cuts: RequiredCut[]) => dispatch({ type: 'SET_CUTS', cuts }), [])
-  const setOwnedTimbers = useCallback((ownedTimbers: OwnedTimber[]) => dispatch({ type: 'SET_OWNED_TIMBERS', ownedTimbers }), [])
+  const setOwnedTimbers = useCallback(
+    (ownedTimbers: OwnedTimber[]) => dispatch({ type: 'SET_OWNED_TIMBERS', ownedTimbers }),
+    []
+  )
   const resetToNewProject = useCallback(() => dispatch({ type: 'RESET_TO_NEW_PROJECT' }), [])
 
   const calculate = useCallback(() => {
@@ -99,94 +146,118 @@ export function useTimberState() {
     setProjects(getAllProjects())
     setShowSaveDialog(false)
     alert('Project saved successfully!')
-  }, [state.projectName, state.currentProjectId, state.timbers, state.cuts, state.ownedTimbers, state.kerf, state.mode, state.unit, setProjectId, setProjects, setShowSaveDialog])
+  }, [
+    state.projectName,
+    state.currentProjectId,
+    state.timbers,
+    state.cuts,
+    state.ownedTimbers,
+    state.kerf,
+    state.mode,
+    state.unit,
+    setProjectId,
+    setProjects,
+    setShowSaveDialog,
+  ])
 
-  const setTimberValuesForLoad = useCallback((project: Project) => {
-    setTimbers(project.timbers)
-    setCuts(project.cuts)
-    setOwnedTimbers(project.ownedTimbers)
-    setKerf(project.kerf)
-    setMode(project.mode)
-    setUnit(project.unit)
-    setProjectId(project.id)
-    setProjectName(project.name)
-  }, [setTimbers, setCuts, setOwnedTimbers, setKerf, setMode, setUnit, setProjectId, setProjectName])
+  const setTimberValuesForLoad = useCallback(
+    (project: Project) => {
+      setTimbers(project.timbers)
+      setCuts(project.cuts)
+      setOwnedTimbers(project.ownedTimbers)
+      setKerf(project.kerf)
+      setMode(project.mode)
+      setUnit(project.unit)
+      setProjectId(project.id)
+      setProjectName(project.name)
+    },
+    [setTimbers, setCuts, setOwnedTimbers, setKerf, setMode, setUnit, setProjectId, setProjectName]
+  )
 
-  const handleLoadProject = useCallback((project: Project) => {
-    // NOTE: dispatching multiple times intentionally for clarity; can be batched if needed
-    setTimberValuesForLoad(project)
-    setShowLoadDialog(false)
-    setSolution(null)
-  }, [setTimberValuesForLoad, setShowLoadDialog, setSolution])
+  const handleLoadProject = useCallback(
+    (project: Project) => {
+      // NOTE: dispatching multiple times intentionally for clarity; can be batched if needed
+      setTimberValuesForLoad(project)
+      setShowLoadDialog(false)
+      setSolution(null)
+    },
+    [setTimberValuesForLoad, setShowLoadDialog, setSolution]
+  )
 
-  const handleDeleteProject = useCallback((id: string) => {
-    if (confirm('Are you sure you want to delete this project?')) {
-      deleteProject(id)
-      setProjects(getAllProjects())
-      if (state.currentProjectId === id) {
-        setProjectId(null)
-        setProjectName('')
+  const handleDeleteProject = useCallback(
+    (id: string) => {
+      if (confirm('Are you sure you want to delete this project?')) {
+        deleteProject(id)
+        setProjects(getAllProjects())
+        if (state.currentProjectId === id) {
+          setProjectId(null)
+          setProjectName('')
+        }
       }
-    }
-  }, [state.currentProjectId, setProjectId, setProjectName, setProjects])
+    },
+    [state.currentProjectId, setProjectId, setProjectName, setProjects]
+  )
 
   const handleNewProject = useCallback(() => {
     resetToNewProject()
   }, [resetToNewProject])
 
-  const store = useMemo(() => ({
-    ...state,
-    // set* functions for UI needs
-    setProjectName,
-    setTimbers,
-    setCuts,
-    setOwnedTimbers,
-    setShowSaveDialog,
-    setShowLoadDialog,
-    setUnit,
-    setKerf,
-    setMode,
-    // actions
-    addTimber,
-    removeTimber,
-    updateTimber,
-    addCut,
-    removeCut,
-    updateCut,
-    addOwnedTimber,
-    removeOwnedTimber,
-    updateOwnedTimber,
-    calculate,
-    handleSaveProject,
-    handleLoadProject,
-    handleDeleteProject,
-    handleNewProject,
-  }), [
-    state,
-    setProjectName,
-    setTimbers,
-    setCuts,
-    setOwnedTimbers,
-    setShowSaveDialog,
-    setShowLoadDialog,
-    setUnit,
-    setKerf,
-    setMode,
-    addTimber,
-    removeTimber,
-    updateTimber,
-    addCut,
-    removeCut,
-    updateCut,
-    addOwnedTimber,
-    removeOwnedTimber,
-    updateOwnedTimber,
-    calculate,
-    handleSaveProject,
-    handleLoadProject,
-    handleDeleteProject,
-    handleNewProject,
-  ])
+  const store = useMemo(
+    () => ({
+      ...state,
+      // set* functions for UI needs
+      setProjectName,
+      setTimbers,
+      setCuts,
+      setOwnedTimbers,
+      setShowSaveDialog,
+      setShowLoadDialog,
+      setUnit,
+      setKerf,
+      setMode,
+      // actions
+      addTimber,
+      removeTimber,
+      updateTimber,
+      addCut,
+      removeCut,
+      updateCut,
+      addOwnedTimber,
+      removeOwnedTimber,
+      updateOwnedTimber,
+      calculate,
+      handleSaveProject,
+      handleLoadProject,
+      handleDeleteProject,
+      handleNewProject,
+    }),
+    [
+      state,
+      setProjectName,
+      setTimbers,
+      setCuts,
+      setOwnedTimbers,
+      setShowSaveDialog,
+      setShowLoadDialog,
+      setUnit,
+      setKerf,
+      setMode,
+      addTimber,
+      removeTimber,
+      updateTimber,
+      addCut,
+      removeCut,
+      updateCut,
+      addOwnedTimber,
+      removeOwnedTimber,
+      updateOwnedTimber,
+      calculate,
+      handleSaveProject,
+      handleLoadProject,
+      handleDeleteProject,
+      handleNewProject,
+    ]
+  )
 
   return store
 }

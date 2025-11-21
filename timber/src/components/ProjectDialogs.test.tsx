@@ -5,7 +5,7 @@ import { type Project } from '@/lib/storage'
 
 // Mock SettingsDialog since it's complex and tested separately (or should be)
 vi.mock('@/components/SettingsDialog', () => ({
-  SettingsDialog: () => <button>Mock Settings</button>
+  SettingsDialog: () => <button>Mock Settings</button>,
 }))
 
 describe('ProjectDialogs', () => {
@@ -20,8 +20,8 @@ describe('ProjectDialogs', () => {
       ownedTimbers: [],
       kerf: 3,
       mode: 'cost',
-      unit: 'mm'
-    }
+      unit: 'mm',
+    },
   ]
 
   const mockProps = {
@@ -41,7 +41,7 @@ describe('ProjectDialogs', () => {
     unit: 'mm' as const,
     setUnit: vi.fn(),
     mode: 'cost' as const,
-    setMode: vi.fn()
+    setMode: vi.fn(),
   }
 
   it('renders all main buttons', () => {
@@ -59,14 +59,14 @@ describe('ProjectDialogs', () => {
   })
 
   it('opens save dialog when Save Project is clicked', () => {
-    // Note: Dialog trigger logic is handled by Radix UI. 
+    // Note: Dialog trigger logic is handled by Radix UI.
     // We can test that the trigger button exists and is clickable.
     // Since we control the open state via props in this component (controlled component),
-    // we should check if setShowSaveDialog is called if it was uncontrolled, 
+    // we should check if setShowSaveDialog is called if it was uncontrolled,
     // but here the DialogTrigger handles the open state internally unless we force it.
     // Wait, the component uses `open={showSaveDialog} onOpenChange={setShowSaveDialog}`.
     // So clicking the trigger should call setShowSaveDialog(true).
-    
+
     render(<ProjectDialogs {...mockProps} />)
     const saveButton = screen.getByText(/Save Project/i).closest('button')
     fireEvent.click(saveButton!)

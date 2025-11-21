@@ -17,8 +17,8 @@ describe('units conversion helpers', () => {
     expect(mmToDisplayNumber(600, 'in')).toBeCloseTo(23.62)
 
     // Round trip display to mm
-      // Round trip display to mm (exact conversion from 23.62in -> 599.948mm)
-      expect(displayToMM(23.62, 'in')).toBeCloseTo(599.948, 3)
+    // Round trip display to mm (exact conversion from 23.62in -> 599.948mm)
+    expect(displayToMM(23.62, 'in')).toBeCloseTo(599.948, 3)
     expect(displayToMM(600, 'mm')).toBe(600)
   })
 

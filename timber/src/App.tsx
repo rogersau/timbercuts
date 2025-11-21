@@ -8,7 +8,6 @@ import CutsList from '@/components/CutsList'
 import ProjectDialogs from '@/components/ProjectDialogs'
 import Layout from '@/components/Layout'
 import ControlPanel from '@/components/ControlPanel'
-import './App.css'
 
 function App() {
   const store = useTimberState()
@@ -129,15 +128,10 @@ function App() {
         </Card>
 
         {/* Control Panel */}
-        <ControlPanel 
-          isCalculating={isCalculating}
-          calculate={calculate}
-        />
+        <ControlPanel isCalculating={isCalculating} calculate={calculate} />
 
         {/* Results */}
-        {solution && (
-          <SolutionCard solution={solution} unit={unit} />
-        )}
+        {solution && <SolutionCard solution={solution} unit={unit} />}
       </Layout>
     </TooltipProvider>
   )

@@ -13,7 +13,9 @@ export default function Layout({ children, projectName, currentProjectId }: Layo
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Cut Optimiser</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Minimise waste and cost for your timber cutting needs</p>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Minimise waste and cost for your timber cutting needs
+          </p>
           {currentProjectId && projectName && (
             <div className="flex items-center justify-center gap-2 text-sm text-primary">
               <FileText className="h-4 w-4" />

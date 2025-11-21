@@ -27,6 +27,7 @@ Timber Cuts is a React application designed to help woodworkers, carpenters, and
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone <repository-url>
    cd timbercuts/timber

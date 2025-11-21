@@ -4,7 +4,7 @@ import type { Solution } from '@/lib/timber-optimizer'
 
 type Props = {
   solution: Solution
-  unit: 'mm'|'in'
+  unit: 'mm' | 'in'
 }
 
 export function SolutionCard({ solution, unit }: Props) {
@@ -29,11 +29,15 @@ export function SolutionCard({ solution, unit }: Props) {
             <div className="text-xs sm:text-sm text-muted-foreground">To Purchase</div>
           </div>
           <div className="text-center">
-            <div className="text-xl sm:text-2xl font-bold">{mmToDisplayStr(solution.totalWaste, unit)}</div>
+            <div className="text-xl sm:text-2xl font-bold">
+              {mmToDisplayStr(solution.totalWaste, unit)}
+            </div>
             <div className="text-xs sm:text-sm text-muted-foreground">Total Waste</div>
           </div>
           <div className="text-center">
-            <div className="text-xl sm:text-2xl font-bold">{mmToDisplayStr(solution.totalKerf, unit)}</div>
+            <div className="text-xl sm:text-2xl font-bold">
+              {mmToDisplayStr(solution.totalKerf, unit)}
+            </div>
             <div className="text-xs sm:text-sm text-muted-foreground">Kerf Used</div>
           </div>
           <div className="text-center">
@@ -47,20 +51,37 @@ export function SolutionCard({ solution, unit }: Props) {
           {solution.plans.map((plan, index) => (
             <div key={index} className="p-3 sm:p-4 border rounded-lg space-y-2">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
-                <span className="font-medium text-sm sm:text-base">Timber #{index + 1} {plan.isOwned && <span className="text-xs text-primary">(Owned)</span>}</span>
-                <span className="text-xs sm:text-sm text-muted-foreground">{mmToDisplayStr(plan.timberLength, unit)} {!plan.isOwned && `@ $${plan.timberPrice.toFixed(2)}`}</span>
+                <span className="font-medium text-sm sm:text-base">
+                  Timber #{index + 1}{' '}
+                  {plan.isOwned && <span className="text-xs text-primary">(Owned)</span>}
+                </span>
+                <span className="text-xs sm:text-sm text-muted-foreground">
+                  {mmToDisplayStr(plan.timberLength, unit)}{' '}
+                  {!plan.isOwned && `@ $${plan.timberPrice.toFixed(2)}`}
+                </span>
               </div>
               <div className="flex gap-2 flex-wrap">
                 {plan.cuts.map((cut, cutIndex) => (
-                  <span key={cutIndex} className={plan.isOwned ? "px-2 sm:px-3 py-1 bg-green-500 text-white rounded-full text-xs sm:text-sm" : "px-2 sm:px-3 py-1 bg-primary text-primary-foreground rounded-full text-xs sm:text-sm"}>
+                  <span
+                    key={cutIndex}
+                    className={
+                      plan.isOwned
+                        ? 'px-2 sm:px-3 py-1 bg-green-500 text-white rounded-full text-xs sm:text-sm'
+                        : 'px-2 sm:px-3 py-1 bg-primary text-primary-foreground rounded-full text-xs sm:text-sm'
+                    }
+                  >
                     {mmToDisplayStr(cut, unit)}
                   </span>
                 ))}
                 {plan.kerfUsed > 0 && (
-                  <span className="px-2 sm:px-3 py-1 bg-accent text-accent-foreground rounded-full text-xs sm:text-sm">kerf {mmToDisplayStr(plan.kerfUsed, unit)}</span>
+                  <span className="px-2 sm:px-3 py-1 bg-accent text-accent-foreground rounded-full text-xs sm:text-sm">
+                    kerf {mmToDisplayStr(plan.kerfUsed, unit)}
+                  </span>
                 )}
                 {plan.waste > 0 && (
-                  <span className="px-2 sm:px-3 py-1 bg-destructive/20 text-destructive rounded-full text-xs sm:text-sm">{mmToDisplayStr(plan.waste, unit)} waste</span>
+                  <span className="px-2 sm:px-3 py-1 bg-destructive/20 text-destructive rounded-full text-xs sm:text-sm">
+                    {mmToDisplayStr(plan.waste, unit)} waste
+                  </span>
                 )}
               </div>
             </div>

@@ -6,18 +6,10 @@ interface ControlPanelProps {
   calculate: () => void
 }
 
-export default function ControlPanel({
-  isCalculating,
-  calculate
-}: ControlPanelProps) {
+export default function ControlPanel({ isCalculating, calculate }: ControlPanelProps) {
   return (
     <div className="flex flex-wrap justify-center gap-3">
-      <Button 
-        className="w-full" 
-        size="lg" 
-        onClick={calculate}
-        disabled={isCalculating}
-      >
+      <Button className="w-full" size="lg" onClick={calculate} disabled={isCalculating}>
         {isCalculating ? (
           <>Calculating...</>
         ) : (

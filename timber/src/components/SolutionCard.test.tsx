@@ -5,7 +5,7 @@ import { type Solution } from '@/lib/timber-optimizer'
 
 describe('SolutionCard', () => {
   const mockSolution: Solution = {
-    totalCost: 100.50,
+    totalCost: 100.5,
     totalWaste: 50,
     totalKerf: 10,
     totalTimbers: 2,
@@ -18,17 +18,17 @@ describe('SolutionCard', () => {
         cuts: [1000, 1000],
         waste: 390,
         kerfUsed: 10,
-        isOwned: true
+        isOwned: true,
       },
       {
         timberLength: 2400,
-        timberPrice: 100.50,
+        timberPrice: 100.5,
         cuts: [2000],
         waste: 400,
         kerfUsed: 0,
-        isOwned: false
-      }
-    ]
+        isOwned: false,
+      },
+    ],
   }
 
   it('renders summary statistics', () => {
@@ -43,7 +43,7 @@ describe('SolutionCard', () => {
     expect(screen.getByText('Timber #1')).toBeInTheDocument()
     expect(screen.getByText('(Owned)')).toBeInTheDocument()
     expect(screen.getByText('Timber #2')).toBeInTheDocument()
-    
+
     // Check for cuts
     const cuts = screen.getAllByText('1000mm')
     expect(cuts).toHaveLength(2)
@@ -54,12 +54,12 @@ describe('SolutionCard', () => {
     render(<SolutionCard solution={mockSolution} unit="mm" />)
     // Owned timber cuts are green (bg-green-500)
     // Purchased timber cuts are primary color
-    // This is hard to test with just class names in jsdom without computing styles, 
+    // This is hard to test with just class names in jsdom without computing styles,
     // but we can check if the classes are present in the HTML
-    
+
     const ownedCut = screen.getAllByText('1000mm')[0]
     expect(ownedCut.className).toContain('bg-green-500')
-    
+
     const purchasedCut = screen.getByText('2000mm')
     expect(purchasedCut.className).toContain('bg-primary')
   })

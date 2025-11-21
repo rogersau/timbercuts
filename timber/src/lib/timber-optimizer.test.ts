@@ -1,13 +1,18 @@
 import { describe, it, expect } from 'vitest'
-import { optimizeTimberCutting, type TimberStock, type RequiredCut, type OwnedTimber } from './timber-optimizer'
+import {
+  optimizeTimberCutting,
+  type TimberStock,
+  type RequiredCut,
+  type OwnedTimber,
+} from './timber-optimizer'
 
 describe('Timber Optimizer', () => {
   const standardTimbers: TimberStock[] = [
-    { length: 1200, price: 9.40 },
-    { length: 1800, price: 14.50 },
-    { length: 2400, price: 19.20 },
-    { length: 3000, price: 23.90 },
-    { length: 3600, price: 28.70 },
+    { length: 1200, price: 9.4 },
+    { length: 1800, price: 14.5 },
+    { length: 2400, price: 19.2 },
+    { length: 3000, price: 23.9 },
+    { length: 3600, price: 28.7 },
   ]
 
   describe('Basic Cutting', () => {
@@ -82,7 +87,7 @@ describe('Timber Optimizer', () => {
 
       // Should use 1200mm ($9.40) instead of larger timbers
       expect(result.plans[0].timberLength).toBe(1200)
-      expect(result.totalCost).toBe(9.40)
+      expect(result.totalCost).toBe(9.4)
     })
 
     it('should prefer cost-efficient timber', () => {
@@ -91,7 +96,7 @@ describe('Timber Optimizer', () => {
 
       // Should use 2400mm ($19.20) as most cost-efficient for 2000mm cut
       expect(result.plans[0].timberLength).toBe(2400)
-      expect(result.totalCost).toBe(19.20)
+      expect(result.totalCost).toBe(19.2)
     })
 
     it('should pack efficiently to minimize purchases', () => {
@@ -100,7 +105,7 @@ describe('Timber Optimizer', () => {
 
       // Should fit 2x600 in each 1200mm timber = 2 timbers total
       expect(result.totalTimbers).toBe(2)
-      expect(result.totalCost).toBe(9.40 * 2)
+      expect(result.totalCost).toBe(9.4 * 2)
     })
   })
 
@@ -144,7 +149,7 @@ describe('Timber Optimizer', () => {
       // 1 owned timber fits 2 cuts, need 1 purchase for remaining 2 cuts
       expect(result.ownedTimbersUsed).toBe(1)
       expect(result.purchasedTimbersNeeded).toBe(1)
-      expect(result.totalCost).toBe(9.40) // Only count purchased timber
+      expect(result.totalCost).toBe(9.4) // Only count purchased timber
     })
 
     it('should track owned timber quantities correctly', () => {
@@ -169,7 +174,10 @@ describe('Timber Optimizer', () => {
     })
 
     it('should handle multiple owned timber lengths', () => {
-      const cuts: RequiredCut[] = [{ length: 500, quantity: 1 }, { length: 1500, quantity: 1 }]
+      const cuts: RequiredCut[] = [
+        { length: 500, quantity: 1 },
+        { length: 1500, quantity: 1 },
+      ]
       const owned: OwnedTimber[] = [
         { length: 600, quantity: 1 },
         { length: 1800, quantity: 1 },
@@ -214,8 +222,9 @@ describe('Timber Optimizer', () => {
 
       // Should pack efficiently: 800+400 and 400 separately
       expect(result.totalTimbers).toBeGreaterThan(0)
-      const totalCutLength = result.plans.reduce((sum, plan) => 
-        sum + plan.cuts.reduce((s, c) => s + c, 0), 0
+      const totalCutLength = result.plans.reduce(
+        (sum, plan) => sum + plan.cuts.reduce((s, c) => s + c, 0),
+        0
       )
       expect(totalCutLength).toBe(400 * 2 + 800)
     })
