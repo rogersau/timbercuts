@@ -76,3 +76,23 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #root > div > div > div:last-child,
+  #root > div > div > div:last-child * {
+    visibility: visible;
+  }
+  #root > div > div > div:last-child {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  /* Hide buttons inside the solution card when printing */
+  button {
+    display: none !important;
+  }
+}

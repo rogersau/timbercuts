@@ -1,4 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Printer, FileSpreadsheet } from 'lucide-react'
 import { mmToDisplayStr } from '@/lib/units'
 import type { Solution } from '@/lib/timber-optimizer'
 
@@ -8,11 +10,59 @@ type Props = {
 }
 
 export function SolutionCard({ solution, unit }: Props) {
+  const handlePrint = () => {
+    window.print()
+  }
+
+  const handleExportCSV = () => {
+    // Header
+    let csv = 'Timber ID,Type,Length,Cost,Cuts,Waste,Kerf\n'
+    
+    solution.plans.forEach((plan, index) => {
+      const type = plan.isOwned ? 'Owned' : 'Purchased'
+      const cutsStr = plan.cuts.map(c => mmToDisplayStr(c, unit)).join('; ')
+      const wasteStr = mmToDisplayStr(plan.waste, unit)
+      const kerfStr = mmToDisplayStr(plan.kerfUsed, unit)
+      const lengthStr = mmToDisplayStr(plan.timberLength, unit)
+      
+      csv += `${index + 1},${type},${lengthStr},${plan.timberPrice.toFixed(2)},"${cutsStr}",${wasteStr},${kerfStr}\n`
+    })
+    
+    // Summary
+    csv += `\nSummary\n`
+    csv += `Total Cost,${solution.totalCost.toFixed(2)}\n`
+    csv += `Total Waste,${mmToDisplayStr(solution.totalWaste, unit)}\n`
+    csv += `Total Kerf,${mmToDisplayStr(solution.totalKerf, unit)}\n`
+    csv += `Timbers Used,${solution.totalTimbers}\n`
+
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `cutting-plan-${Date.now()}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   return (
-    <Card className="border-2 border-primary">
-      <CardHeader>
-        <CardTitle>Optimal Solution</CardTitle>
-        <CardDescription>Most cost-effective cutting plan</CardDescription>
+    <Card className="border-2 border-primary print:border-0 print:shadow-none">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div className="space-y-1">
+          <CardTitle>Optimal Solution</CardTitle>
+          <CardDescription>Most cost-effective cutting plan</CardDescription>
+        </div>
+        <div className="flex gap-2 print:hidden">
+          <Button variant="outline" size="sm" onClick={handlePrint}>
+            <Printer className="h-4 w-4 mr-2" />
+            Print
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleExportCSV}>
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
+            CSV
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg">

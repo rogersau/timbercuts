@@ -42,6 +42,9 @@ describe('ProjectDialogs', () => {
     setUnit: vi.fn(),
     mode: 'cost' as const,
     setMode: vi.fn(),
+    timbers: [],
+    cuts: [],
+    ownedTimbers: [],
   }
 
   it('renders all main buttons', () => {

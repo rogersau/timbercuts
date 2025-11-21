@@ -5,7 +5,7 @@ import {
   type Solution,
   type OwnedTimber,
 } from '@/lib/timber-optimizer'
-import { getAllProjects, saveProject, deleteProject, type Project } from '@/lib/storage'
+import { getAllProjects, saveProject, deleteProject, saveDraft, getDraft, type Project } from '@/lib/storage'
 import OptimizerWorker from '@/workers/optimizer.worker?worker'
 import { reducer, defaultTimbers, defaultCuts } from '@/reducers/timberReducer'
 
@@ -27,6 +27,33 @@ export function useTimberState() {
   })
 
   const workerRef = useRef<Worker | null>(null)
+
+  // Load draft on mount
+  useEffect(() => {
+    const draft = getDraft()
+    if (draft && !state.currentProjectId) {
+      if (draft.timbers) dispatch({ type: 'SET_TIMBERS', timbers: draft.timbers })
+      if (draft.cuts) dispatch({ type: 'SET_CUTS', cuts: draft.cuts })
+      if (draft.ownedTimbers) dispatch({ type: 'SET_OWNED_TIMBERS', ownedTimbers: draft.ownedTimbers })
+      if (draft.kerf) dispatch({ type: 'SET_KERF', kerf: draft.kerf })
+      if (draft.mode) dispatch({ type: 'SET_MODE', mode: draft.mode })
+      if (draft.unit) dispatch({ type: 'SET_UNIT', unit: draft.unit })
+    }
+  }, [])
+
+  // Save draft on change
+  useEffect(() => {
+    if (!state.currentProjectId) {
+      saveDraft({
+        timbers: state.timbers,
+        cuts: state.cuts,
+        ownedTimbers: state.ownedTimbers,
+        kerf: state.kerf,
+        mode: state.mode,
+        unit: state.unit,
+      })
+    }
+  }, [state.timbers, state.cuts, state.ownedTimbers, state.kerf, state.mode, state.unit, state.currentProjectId])
 
   useEffect(() => {
     workerRef.current = new OptimizerWorker()

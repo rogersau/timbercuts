@@ -14,6 +14,7 @@ export interface Project {
 }
 
 const STORAGE_KEY = 'timber-cut-projects'
+const DRAFT_KEY = 'timber-cut-draft'
 
 /**
  * Retrieves all projects from local storage.
@@ -125,5 +126,23 @@ export function importProjects(jsonData: string): boolean {
   } catch (error) {
     console.error('Error importing projects:', error)
     return false
+  }
+}
+
+export function saveDraft(data: Partial<Project>) {
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(data))
+  } catch (error) {
+    console.error('Error saving draft:', error)
+  }
+}
+
+export function getDraft(): Partial<Project> | null {
+  try {
+    const data = localStorage.getItem(DRAFT_KEY)
+    return data ? JSON.parse(data) : null
+  } catch (error) {
+    console.error('Error loading draft:', error)
+    return null
   }
 }

@@ -1,4 +1,4 @@
-import { FolderOpen, Save, Plus, Trash2 } from 'lucide-react'
+import { FolderOpen, Save, Plus, Trash2, Download, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -9,8 +9,10 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Separator } from "@/components/ui/separator"
 import { type Project } from '@/lib/storage'
 import { SettingsDialog } from '@/components/SettingsDialog'
+import { useRef } from 'react'
 
 type Props = {
   projectName: string
@@ -30,6 +32,10 @@ type Props = {
   setUnit: (unit: 'mm' | 'in') => void
   mode: 'cost' | 'waste'
   setMode: (mode: 'cost' | 'waste') => void
+  // Add current state for export
+  timbers: any[]
+  cuts: any[]
+  ownedTimbers: any[]
 }
 
 export function ProjectDialogs(props: Props) {
@@ -51,7 +57,72 @@ export function ProjectDialogs(props: Props) {
     setUnit,
     mode,
     setMode,
+    timbers,
+    cuts,
+    ownedTimbers,
   } = props
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleExport = () => {
+    const data = {
+      name: projectName || 'Untitled Project',
+      timbers,
+      cuts,
+      ownedTimbers,
+      kerf,
+      mode,
+      unit,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${data.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string)
+        // Basic validation
+        if (!Array.isArray(json.timbers) || !Array.isArray(json.cuts)) {
+          throw new Error('Invalid project file format')
+        }
+        
+        // Create a project object compatible with handleLoadProject
+        const project: Project = {
+          id: 'imported-' + Date.now(),
+          name: json.name || 'Imported Project',
+          timbers: json.timbers,
+          cuts: json.cuts,
+          ownedTimbers: json.ownedTimbers || [],
+          kerf: json.kerf || 3,
+          mode: json.mode || 'cost',
+          unit: json.unit || 'mm',
+          createdAt: json.createdAt || Date.now(),
+          updatedAt: json.updatedAt || Date.now(),
+        }
+        
+        handleLoadProject(project)
+        if (fileInputRef.current) fileInputRef.current.value = ''
+      } catch (error) {
+        alert('Failed to import project: ' + (error as Error).message)
+      }
+    }
+    reader.readAsText(file)
+  }
+
   return (
     <div className="flex flex-wrap justify-center gap-2">
       <Button variant="outline" size="sm" onClick={handleNewProject}>
@@ -136,7 +207,7 @@ export function ProjectDialogs(props: Props) {
           </div>
         </DialogContent>
       </Dialog>
-
+        <Separator orientation="vertical" />
       <SettingsDialog
         kerf={kerf}
         setKerf={setKerf}
@@ -145,6 +216,24 @@ export function ProjectDialogs(props: Props) {
         mode={mode}
         setMode={setMode}
       />
+      <Button variant="outline" size="sm" onClick={handleExport}>
+        <Download className="h-4 w-4" />
+        <span className="hidden sm:inline">Export</span>
+      </Button>
+
+      <div className="relative">
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleImport}
+          accept=".json"
+          className="hidden"
+        />
+        <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+          <Upload className="h-4 w-4" />
+          <span className="hidden sm:inline">Import</span>
+        </Button>
+      </div>
     </div>
   )
 }

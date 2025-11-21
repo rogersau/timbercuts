@@ -72,6 +72,9 @@ function App() {
           setUnit={setUnit}
           mode={mode}
           setMode={setMode}
+          timbers={timbers}
+          cuts={cuts}
+          ownedTimbers={ownedTimbers}
         />
 
         <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
