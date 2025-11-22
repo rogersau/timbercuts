@@ -125,7 +125,13 @@ export function optimizeTimberCutting(
           }
         } else {
           // Cost mode: owned timber is free, always prefer it
-          if (!bestFit.isOwned || result.cuts.length > bestFit.cuts.length) {
+          // For owned timber, we always want to minimize waste (tightest fit)
+          // if the number of cuts is the same.
+          if (
+            !bestFit.isOwned ||
+            result.cuts.length > bestFit.cuts.length ||
+            (result.cuts.length === bestFit.cuts.length && waste < bestFit.waste)
+          ) {
             bestFit = {
               timber: { length: owned.length, price: 0 },
               cuts: result.cuts,

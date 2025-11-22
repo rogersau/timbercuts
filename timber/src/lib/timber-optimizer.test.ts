@@ -258,4 +258,76 @@ describe('Timber Optimizer', () => {
       expect(result.totalCost).toBe(0)
     })
   })
+
+  describe('Advanced Owned Timber Logic', () => {
+    it('should prioritize owned timber over purchased timber even if purchased is perfect fit', () => {
+      const cuts: RequiredCut[] = [{ length: 1000, quantity: 1 }]
+      const owned: OwnedTimber[] = [{ length: 1500, quantity: 1 }]
+      // Purchased 1200 fits better than 1500 (waste 200 vs 500), but owned should be free/priority
+
+      const result = optimizeTimberCutting(standardTimbers, cuts, 0, 'cost', owned)
+
+      expect(result.plans[0].isOwned).toBe(true)
+      expect(result.plans[0].timberLength).toBe(1500)
+      expect(result.totalCost).toBe(0)
+    })
+
+    it('should use owned timber that minimizes waste when multiple owned timbers fit (Cost Mode)', () => {
+      const cuts: RequiredCut[] = [{ length: 900, quantity: 1 }]
+      const owned: OwnedTimber[] = [
+        { length: 2000, quantity: 1 },
+        { length: 1000, quantity: 1 },
+      ]
+
+      const result = optimizeTimberCutting(standardTimbers, cuts, 0, 'cost', owned)
+
+      expect(result.plans[0].isOwned).toBe(true)
+      expect(result.plans[0].timberLength).toBe(1000)
+      expect(result.plans[0].waste).toBe(100)
+    })
+
+    it('should use owned timber that minimizes waste when multiple owned timbers fit (Waste Mode)', () => {
+      const cuts: RequiredCut[] = [{ length: 900, quantity: 1 }]
+      const owned: OwnedTimber[] = [
+        { length: 2000, quantity: 1 },
+        { length: 1000, quantity: 1 },
+      ]
+
+      const result = optimizeTimberCutting(standardTimbers, cuts, 0, 'waste', owned)
+
+      expect(result.plans[0].isOwned).toBe(true)
+      expect(result.plans[0].timberLength).toBe(1000)
+    })
+
+    it('should fallback to purchased timber when owned timber is too small', () => {
+      const cuts: RequiredCut[] = [{ length: 2500, quantity: 1 }]
+      const owned: OwnedTimber[] = [{ length: 2000, quantity: 1 }]
+
+      const result = optimizeTimberCutting(standardTimbers, cuts, 0, 'cost', owned)
+
+      expect(result.plans[0].isOwned).toBe(false)
+      expect(result.plans[0].timberLength).toBe(3000) // Standard timber 3000 fits 2500
+      expect(result.ownedTimbersUsed).toBe(0)
+    })
+
+    it('should mix owned and purchased timber optimally', () => {
+      const cuts: RequiredCut[] = [
+        { length: 1000, quantity: 1 }, // Fits in owned 1200
+        { length: 2000, quantity: 1 }, // Needs purchase (standard 2400)
+      ]
+      const owned: OwnedTimber[] = [{ length: 1200, quantity: 1 }]
+
+      const result = optimizeTimberCutting(standardTimbers, cuts, 0, 'cost', owned)
+
+      expect(result.ownedTimbersUsed).toBe(1)
+      expect(result.purchasedTimbersNeeded).toBe(1)
+
+      const ownedPlan = result.plans.find((p) => p.isOwned)
+      const purchasedPlan = result.plans.find((p) => !p.isOwned)
+
+      expect(ownedPlan?.cuts).toContain(1000)
+      expect(purchasedPlan?.cuts).toContain(2000)
+      expect(purchasedPlan?.timberLength).toBe(2400)
+    })
+  })
 })
