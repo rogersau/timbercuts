@@ -76,6 +76,8 @@ export function optimizeTimberCutting(
   const plans: CutPlan[] = []
   const remainingPieces = [...pieces]
 
+  // Debug removed
+
   // Try to fit pieces into timbers using First Fit Decreasing
   while (remainingPieces.length > 0) {
     let bestFit: {
@@ -167,10 +169,16 @@ export function optimizeTimberCutting(
           }
 
           if (mode === 'waste') {
+            const currentRatio = waste / timber.length
+            const bestRatio = bestFit.waste / bestFit.timber.length
+
+            // In waste mode for purchased timber, we want to minimize the waste ratio (efficiency).
+            // This prevents picking small timbers with low absolute waste but high percentage waste,
+            // which leads to higher total waste when scaled up.
             if (
-              waste < bestFit.waste ||
-              (waste === bestFit.waste && result.cuts.length > bestFit.cuts.length) ||
-              (waste === bestFit.waste &&
+              currentRatio < bestRatio ||
+              (currentRatio === bestRatio && result.cuts.length > bestFit.cuts.length) ||
+              (currentRatio === bestRatio &&
                 result.cuts.length === bestFit.cuts.length &&
                 timber.price < bestFit.timber.price)
             ) {

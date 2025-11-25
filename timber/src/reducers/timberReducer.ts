@@ -19,6 +19,8 @@ export type State = {
   projects: Project[]
   showSaveDialog: boolean
   showLoadDialog: boolean
+  showErrorDialog: boolean
+  errorMessage: string | null
   isCalculating: boolean
 }
 
@@ -44,6 +46,8 @@ export type Action =
   | { type: 'SET_OWNED_TIMBERS'; ownedTimbers: OwnedTimber[] }
   | { type: 'SET_SHOW_SAVE_DIALOG'; show: boolean }
   | { type: 'SET_SHOW_LOAD_DIALOG'; show: boolean }
+  | { type: 'SET_SHOW_ERROR_DIALOG'; show: boolean }
+  | { type: 'SET_ERROR_MESSAGE'; error: string | null }
   | { type: 'RESET_TO_NEW_PROJECT' }
   | { type: 'SET_IS_CALCULATING'; isCalculating: boolean }
 
@@ -113,6 +117,12 @@ export function reducer(state: State, action: Action): State {
       return { ...state, showSaveDialog: action.show }
     case 'SET_SHOW_LOAD_DIALOG':
       return { ...state, showLoadDialog: action.show }
+
+    case 'SET_SHOW_ERROR_DIALOG':
+      return { ...state, showErrorDialog: action.show }
+
+    case 'SET_ERROR_MESSAGE':
+      return { ...state, errorMessage: action.error }
 
     // --- Bulk Updates (Loading Projects) ---
     case 'SET_TIMBERS':

@@ -23,6 +23,8 @@ export function useTimberState() {
     projects: getAllProjects(),
     showSaveDialog: false,
     showLoadDialog: false,
+    showErrorDialog: false,
+    errorMessage: null,
     isCalculating: false,
   })
 
@@ -62,7 +64,9 @@ export function useTimberState() {
       if (type === 'SUCCESS') {
         dispatch({ type: 'SET_SOLUTION', solution })
       } else if (type === 'ERROR') {
-        alert(error)
+        // show error to user via app dialog (use reducer actions)
+        dispatch({ type: 'SET_ERROR_MESSAGE', error: error ?? 'Unknown error from worker' })
+        dispatch({ type: 'SET_SHOW_ERROR_DIALOG', show: true })
       }
       dispatch({ type: 'SET_IS_CALCULATING', isCalculating: false })
     }
@@ -130,6 +134,10 @@ export function useTimberState() {
     (show: boolean) => dispatch({ type: 'SET_SHOW_LOAD_DIALOG', show }),
     []
   )
+
+  const setShowErrorDialog = useCallback((show: boolean) => dispatch({ type: 'SET_SHOW_ERROR_DIALOG', show }), [])
+
+  const setErrorMessage = useCallback((error: string | null) => dispatch({ type: 'SET_ERROR_MESSAGE', error }), [])
   const setTimbers = useCallback(
     (timbers: TimberStock[]) => dispatch({ type: 'SET_TIMBERS', timbers }),
     []
@@ -242,6 +250,8 @@ export function useTimberState() {
       setUnit,
       setKerf,
       setMode,
+      setShowErrorDialog,
+      setErrorMessage,
       // actions
       addTimber,
       removeTimber,

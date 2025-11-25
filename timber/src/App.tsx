@@ -8,6 +8,7 @@ import CutsList from '@/components/CutsList'
 import ProjectDialogs from '@/components/ProjectDialogs'
 import Layout from '@/components/Layout'
 import ControlPanel from '@/components/ControlPanel'
+import ErrorDialog from '@/components/ErrorDialog'
 
 function App() {
   const store = useTimberState()
@@ -25,12 +26,16 @@ function App() {
     projects,
     showSaveDialog,
     showLoadDialog,
+    showErrorDialog,
+    errorMessage,
     setProjectName,
     setShowSaveDialog,
     setShowLoadDialog,
     setUnit,
     setKerf,
     setMode,
+    setShowErrorDialog,
+    setErrorMessage,
   } = store
 
   const {
@@ -136,6 +141,15 @@ function App() {
         {/* Results */}
         {solution && <SolutionCard solution={solution} unit={unit} />}
       </Layout>
+      {/* Error dialog shown when worker returns an ERROR */}
+      <ErrorDialog
+        open={showErrorDialog}
+        setOpen={(open) => {
+          setShowErrorDialog(open)
+          if (!open) setErrorMessage(null)
+        }}
+        message={errorMessage}
+      />
     </TooltipProvider>
   )
 }

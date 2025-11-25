@@ -1,0 +1,80 @@
+# GitHub Copilot Agents descriptor for the timbercuts repository
+#  - Purpose: give an agent a concise, actionable picture of the repo and guardrails
+#  - NOTE: under no circumstances shall the agent modify files in `timber/src/components/ui` or
+#    `timber/src/components/ui/*` unless explicit human permission is granted.
+
+agent:
+  name: timbercuts-assistant
+  version: 1
+  description: >-
+    Assistants for the Timber Cut Optimizer project. The project is a Vite + React +
+    TypeScript app that uses Tailwind CSS and shadcn (Radix) UI components. The
+    core purpose is to compute optimized timber cutting plans that balance cost and
+    waste (including kerf/blade thickness), and support using "timber on hand".
+
+repo:
+  root: '.'
+  important_paths:
+    - timber/
+    - timber/src/lib/timber-optimizer.ts
+    - timber/src/App.tsx
+    - timber/src/components/ui/  # UI primitives (do not modify unless explicitly allowed)
+    - timber/package.json
+    - timber/TESTING.md
+
+technology:
+  - vite
+  - react
+  - typescript
+  - tailwindcss
+  - shadcn (Radix + @radix-ui/react-tooltip)
+  - pnpm
+
+how_to_run:
+  dev: |
+    cd timber
+    pnpm install
+    pnpm run dev
+  build: |
+    cd timber
+    pnpm install
+    pnpm build
+
+how_to_test:
+  unit_tests: |
+    cd timber
+    pnpm install
+    pnpm test:run
+  watch_ui: |
+    cd timber
+    pnpm test
+
+points_of_interest:
+  summary: |
+    - Core algorithm implemented in `src/lib/timber-optimizer.ts`.
+    - `App.tsx` provides main UI and uses the optimizer.
+    - `src/components/ui/*` contains shadcn/Radix component wrappers, styling, and
+      should be treated as stable UI primitives.
+
+agent_rules:
+  - "Never edit UI primitives in timber/src/components/ui or timber/src/components/ui/* without explicit permission from a human reviewer."
+  - "If a change affects UI primitives then stop and request approval from a repo maintainer."
+  - "Prioritize tests and non-destructive edits: add unit tests, fix algorithms, refactor helpers, and update documentation."
+  - "Keep pull requests small, explain intent, include tests for any logic change, and reference the failing test if available."
+
+tasks_examples:
+  - name: "Create/extend tests for _timber-optimizer_"
+    goal: "Add unit tests that verify cost- and waste-optimized outputs, kerf handling, and owned timber usage."
+    safe: true
+  - name: "Fix or optimize packing heuristic"
+    goal: "Improve correctness or performance in `src/lib/timber-optimizer.ts`. Add tests and update `TESTING.md` if required."
+    safe: true
+  - name: "Add small UI enhancement"
+    goal: "Make changes in `src/App.tsx` or create new components that do not modify `src/components/ui` primitives."
+    safe: true
+
+contact_points:
+  repo_maintainers: |
+    - "Please ask rogersau or the repo owner for permission before changing UI primitive components."
+
+# End of descriptor
