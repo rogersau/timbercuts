@@ -1,7 +1,6 @@
 import { AlertTriangle } from 'lucide-react'
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,

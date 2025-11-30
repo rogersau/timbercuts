@@ -1,0 +1,91 @@
+import {
+  InputGroup,
+  InputGroupInput,
+  InputGroupAddon,
+  InputGroupText,
+} from '@/components/ui/input-group'
+import { Button } from '@/components/ui/button'
+import { Trash2, Plus } from 'lucide-react'
+import { type SheetStock } from '@/lib/sheet-optimizer'
+import { mmToDisplayNumber, displayToMM } from '@/lib/units'
+
+type Props = {
+  sheets: SheetStock[]
+  unit: 'mm' | 'in'
+  addSheet: () => void
+  removeSheet: (idx: number) => void
+  updateSheet: (idx: number, field: keyof SheetStock, value: number) => void
+}
+
+export function SheetStockList({ sheets, unit, addSheet, removeSheet, updateSheet }: Props) {
+  return (
+    <div>
+      {sheets.map((sheet, index) => (
+        <div key={index} className="flex gap-2 items-center py-1 flex-wrap sm:flex-nowrap">
+          <div className="flex-1 min-w-[100px]">
+            <InputGroup>
+              <InputGroupInput
+                type="number"
+                value={sheet.width ? mmToDisplayNumber(sheet.width, unit) : ''}
+                placeholder={`Width`}
+                onChange={(e) =>
+                  updateSheet(index, 'width', displayToMM(Number(e.target.value), unit))
+                }
+              />
+              <InputGroupAddon align="inline-end">
+                <InputGroupText>{unit}</InputGroupText>
+              </InputGroupAddon>
+            </InputGroup>
+          </div>
+          <span className="text-muted-foreground">×</span>
+          <div className="flex-1 min-w-[100px]">
+            <InputGroup>
+              <InputGroupInput
+                type="number"
+                value={sheet.height ? mmToDisplayNumber(sheet.height, unit) : ''}
+                placeholder={`Height`}
+                onChange={(e) =>
+                  updateSheet(index, 'height', displayToMM(Number(e.target.value), unit))
+                }
+              />
+              <InputGroupAddon align="inline-end">
+                <InputGroupText>{unit}</InputGroupText>
+              </InputGroupAddon>
+            </InputGroup>
+          </div>
+          <div className="w-28">
+            <InputGroup>
+              <InputGroupAddon>
+                <InputGroupText>$</InputGroupText>
+              </InputGroupAddon>
+              <InputGroupInput
+                value={typeof sheet.price === 'number' ? sheet.price.toFixed(2) : ''}
+                placeholder="Price"
+                onChange={(e) => updateSheet(index, 'price', Number(e.target.value))}
+                type="number"
+                step={0.01}
+              />
+            </InputGroup>
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => removeSheet(index)}
+            disabled={sheets.length === 1}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
+      <div className="mt-2">
+        <Button onClick={addSheet} variant="outline" className="w-full">
+          <Plus className="h-4 w-4" />
+          <span className="hidden sm:inline">Add Sheet Size</span>
+          <span className="sm:hidden">Add</span>
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+export default SheetStockList

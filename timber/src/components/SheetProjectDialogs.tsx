@@ -10,21 +10,21 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Separator } from "@/components/ui/separator"
-import { type Project } from '@/lib/storage'
-import { type TimberStock, type RequiredCut, type OwnedTimber } from '@/lib/timber-optimizer'
+import { type SheetProject } from '@/lib/storage'
+import { type SheetStock, type RequiredPanel, type OwnedSheet } from '@/lib/sheet-optimizer'
 import { SettingsDialog } from '@/components/SettingsDialog'
 import { useRef } from 'react'
 
 type Props = {
   projectName: string
   setProjectName: (name: string) => void
-  projects: Project[]
+  projects: SheetProject[]
   showSaveDialog: boolean
   showLoadDialog: boolean
   setShowSaveDialog: (b: boolean) => void
   setShowLoadDialog: (b: boolean) => void
   handleSaveProject: () => void
-  handleLoadProject: (p: Project) => void
+  handleLoadProject: (p: SheetProject) => void
   handleDeleteProject: (id: string) => void
   handleNewProject: () => void
   kerf: number
@@ -33,12 +33,12 @@ type Props = {
   setUnit: (unit: 'mm' | 'in') => void
   mode: 'cost' | 'waste'
   setMode: (mode: 'cost' | 'waste') => void
-  timbers: TimberStock[]
-  cuts: RequiredCut[]
-  ownedTimbers: OwnedTimber[]
+  sheets: SheetStock[]
+  panels: RequiredPanel[]
+  ownedSheets: OwnedSheet[]
 }
 
-export function ProjectDialogs(props: Props) {
+export function SheetProjectDialogs(props: Props) {
   const {
     projectName,
     setProjectName,
@@ -57,19 +57,19 @@ export function ProjectDialogs(props: Props) {
     setUnit,
     mode,
     setMode,
-    timbers,
-    cuts,
-    ownedTimbers,
+    sheets,
+    panels,
+    ownedSheets,
   } = props
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleExport = () => {
     const data = {
-      name: projectName || 'Untitled Project',
-      timbers,
-      cuts,
-      ownedTimbers,
+      name: projectName || 'Untitled Sheet Project',
+      sheets,
+      panels,
+      ownedSheets,
       kerf,
       mode,
       unit,
@@ -95,18 +95,16 @@ export function ProjectDialogs(props: Props) {
     reader.onload = (event) => {
       try {
         const json = JSON.parse(event.target?.result as string)
-        // Basic validation
-        if (!Array.isArray(json.timbers) || !Array.isArray(json.cuts)) {
-          throw new Error('Invalid project file format')
+        if (!Array.isArray(json.sheets) || !Array.isArray(json.panels)) {
+          throw new Error('Invalid sheet project file format')
         }
         
-        // Create a project object compatible with handleLoadProject
-        const project: Project = {
+        const project: SheetProject = {
           id: 'imported-' + Date.now(),
-          name: json.name || 'Imported Project',
-          timbers: json.timbers,
-          cuts: json.cuts,
-          ownedTimbers: json.ownedTimbers || [],
+          name: json.name || 'Imported Sheet Project',
+          sheets: json.sheets,
+          panels: json.panels,
+          ownedSheets: json.ownedSheets || [],
           kerf: json.kerf || 3,
           mode: json.mode || 'cost',
           unit: json.unit || 'mm',
@@ -141,7 +139,7 @@ export function ProjectDialogs(props: Props) {
           <DialogHeader>
             <DialogTitle>Save Project</DialogTitle>
             <DialogDescription>
-              Save your timber cuts configuration to local storage
+              Save your sheet cutting configuration to local storage
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -207,7 +205,9 @@ export function ProjectDialogs(props: Props) {
           </div>
         </DialogContent>
       </Dialog>
-        <Separator orientation="vertical" />
+      
+      <Separator orientation="vertical" />
+      
       <SettingsDialog
         kerf={kerf}
         setKerf={setKerf}
@@ -216,6 +216,7 @@ export function ProjectDialogs(props: Props) {
         mode={mode}
         setMode={setMode}
       />
+      
       <Button variant="outline" size="sm" onClick={handleExport}>
         <Download className="h-4 w-4" />
         <span className="hidden sm:inline">Export</span>
@@ -238,4 +239,4 @@ export function ProjectDialogs(props: Props) {
   )
 }
 
-export default ProjectDialogs
+export default SheetProjectDialogs

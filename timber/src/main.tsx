@@ -1,10 +1,19 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { HashRouter, Routes, Route } from 'react-router-dom'
 import './index.css'
-import App from './App.tsx'
+import HomePage from './pages/HomePage'
+import LinearCuttingPage from './pages/LinearCuttingPage'
+import SheetCuttingPage from './pages/SheetCuttingPage'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <HashRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/linear" element={<LinearCuttingPage />} />
+        <Route path="/sheet" element={<SheetCuttingPage />} />
+      </Routes>
+    </HashRouter>
   </StrictMode>
 )

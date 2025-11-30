@@ -6,7 +6,7 @@
   "homepage": "https://rogersau.github.io/timbercuts/",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "eslint . && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
@@ -34,6 +34,7 @@
     "lucide-react": "^0.553.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-router-dom": "^7.9.6",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7"
   },

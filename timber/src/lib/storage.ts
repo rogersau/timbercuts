@@ -1,4 +1,5 @@
 import type { TimberStock, RequiredCut, OwnedTimber } from './timber-optimizer'
+import type { SheetStock, RequiredPanel, OwnedSheet } from './sheet-optimizer'
 
 export interface Project {
   id: string
@@ -13,8 +14,23 @@ export interface Project {
   updatedAt: number
 }
 
+export interface SheetProject {
+  id: string
+  name: string
+  sheets: SheetStock[]
+  panels: RequiredPanel[]
+  ownedSheets: OwnedSheet[]
+  kerf: number
+  mode: 'cost' | 'waste'
+  unit: 'mm' | 'in'
+  createdAt: number
+  updatedAt: number
+}
+
 const STORAGE_KEY = 'timber-cut-projects'
 const DRAFT_KEY = 'timber-cut-draft'
+const SHEET_STORAGE_KEY = 'sheet-cut-projects'
+const SHEET_DRAFT_KEY = 'sheet-cut-draft'
 
 /**
  * Retrieves all projects from local storage.
@@ -143,6 +159,91 @@ export function getDraft(): Partial<Project> | null {
     return data ? JSON.parse(data) : null
   } catch (error) {
     console.error('Error loading draft:', error)
+    return null
+  }
+}
+
+// ============ Sheet Project Functions ============
+
+export function getAllSheetProjects(): SheetProject[] {
+  try {
+    const data = localStorage.getItem(SHEET_STORAGE_KEY)
+    return data ? JSON.parse(data) : []
+  } catch (error) {
+    console.error('Error loading sheet projects:', error)
+    return []
+  }
+}
+
+export function getSheetProject(id: string): SheetProject | null {
+  const projects = getAllSheetProjects()
+  return projects.find((p) => p.id === id) || null
+}
+
+export function saveSheetProject(
+  project: Omit<SheetProject, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }
+): SheetProject {
+  const projects = getAllSheetProjects()
+  const now = Date.now()
+
+  if (project.id) {
+    const index = projects.findIndex((p) => p.id === project.id)
+    if (index !== -1) {
+      projects[index] = {
+        ...project,
+        id: project.id,
+        createdAt: projects[index].createdAt,
+        updatedAt: now,
+      } as SheetProject
+    } else {
+      const newProject: SheetProject = {
+        ...project,
+        id: project.id,
+        createdAt: now,
+        updatedAt: now,
+      } as SheetProject
+      projects.push(newProject)
+    }
+  } else {
+    const newProject: SheetProject = {
+      ...project,
+      id: crypto.randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+    } as SheetProject
+    projects.push(newProject)
+  }
+
+  localStorage.setItem(SHEET_STORAGE_KEY, JSON.stringify(projects))
+  return projects.find((p) => p.id === project.id) || projects[projects.length - 1]
+}
+
+export function deleteSheetProject(id: string): boolean {
+  const projects = getAllSheetProjects()
+  const filtered = projects.filter((p) => p.id !== id)
+
+  if (filtered.length === projects.length) {
+    return false
+  }
+
+  localStorage.setItem(SHEET_STORAGE_KEY, JSON.stringify(filtered))
+  return true
+}
+
+export function saveSheetDraft(data: Partial<SheetProject>) {
+  try {
+    localStorage.setItem(SHEET_DRAFT_KEY, JSON.stringify(data))
+  } catch (error) {
+    console.error('Error saving sheet draft:', error)
+  }
+}
+
+export function getSheetDraft(): Partial<SheetProject> | null {
+  try {
+    const data = localStorage.getItem(SHEET_DRAFT_KEY)
+    return data ? JSON.parse(data) : null
+  } catch (error) {
+    console.error('Error loading sheet draft:', error)
     return null
   }
 }

@@ -1,26 +1,26 @@
 import { useReducer, useMemo, useCallback, useEffect, useRef } from 'react'
 import {
-  type TimberStock,
-  type RequiredCut,
-  type Solution,
-  type OwnedTimber,
-} from '@/lib/timber-optimizer'
-import { getAllProjects, saveProject, deleteProject, saveDraft, getDraft, type Project } from '@/lib/storage'
-import OptimizerWorker from '@/workers/optimizer.worker?worker'
-import { reducer, defaultTimbers, defaultCuts } from '@/reducers/timberReducer'
+  type SheetStock,
+  type RequiredPanel,
+  type SheetSolution,
+  type OwnedSheet,
+} from '@/lib/sheet-optimizer'
+import { getAllSheetProjects, saveSheetProject, deleteSheetProject, saveSheetDraft, getSheetDraft, type SheetProject } from '@/lib/storage'
+import SheetOptimizerWorker from '@/workers/sheet-optimizer.worker?worker'
+import { sheetReducer, defaultSheets, defaultPanels } from '@/reducers/sheetReducer'
 
-export function useTimberState() {
-  const [state, dispatch] = useReducer(reducer, {
-    timbers: defaultTimbers,
-    cuts: defaultCuts,
-    ownedTimbers: [],
+export function useSheetState() {
+  const [state, dispatch] = useReducer(sheetReducer, {
+    sheets: defaultSheets,
+    panels: defaultPanels,
+    ownedSheets: [],
     solution: null,
     kerf: 3,
     mode: 'cost',
     unit: 'mm',
     currentProjectId: null,
     projectName: '',
-    projects: getAllProjects(),
+    projects: getAllSheetProjects(),
     showSaveDialog: false,
     showLoadDialog: false,
     showErrorDialog: false,
@@ -32,11 +32,11 @@ export function useTimberState() {
 
   // Load draft on mount
   useEffect(() => {
-    const draft = getDraft()
+    const draft = getSheetDraft()
     if (draft && !state.currentProjectId) {
-      if (draft.timbers) dispatch({ type: 'SET_TIMBERS', timbers: draft.timbers })
-      if (draft.cuts) dispatch({ type: 'SET_CUTS', cuts: draft.cuts })
-      if (draft.ownedTimbers) dispatch({ type: 'SET_OWNED_TIMBERS', ownedTimbers: draft.ownedTimbers })
+      if (draft.sheets) dispatch({ type: 'SET_SHEETS', sheets: draft.sheets })
+      if (draft.panels) dispatch({ type: 'SET_PANELS', panels: draft.panels })
+      if (draft.ownedSheets) dispatch({ type: 'SET_OWNED_SHEETS', ownedSheets: draft.ownedSheets })
       if (draft.kerf) dispatch({ type: 'SET_KERF', kerf: draft.kerf })
       if (draft.mode) dispatch({ type: 'SET_MODE', mode: draft.mode })
       if (draft.unit) dispatch({ type: 'SET_UNIT', unit: draft.unit })
@@ -47,25 +47,24 @@ export function useTimberState() {
   // Save draft on change
   useEffect(() => {
     if (!state.currentProjectId) {
-      saveDraft({
-        timbers: state.timbers,
-        cuts: state.cuts,
-        ownedTimbers: state.ownedTimbers,
+      saveSheetDraft({
+        sheets: state.sheets,
+        panels: state.panels,
+        ownedSheets: state.ownedSheets,
         kerf: state.kerf,
         mode: state.mode,
         unit: state.unit,
       })
     }
-  }, [state.timbers, state.cuts, state.ownedTimbers, state.kerf, state.mode, state.unit, state.currentProjectId])
+  }, [state.sheets, state.panels, state.ownedSheets, state.kerf, state.mode, state.unit, state.currentProjectId])
 
   useEffect(() => {
-    workerRef.current = new OptimizerWorker()
+    workerRef.current = new SheetOptimizerWorker()
     workerRef.current.onmessage = (e) => {
       const { type, solution, error } = e.data
       if (type === 'SUCCESS') {
         dispatch({ type: 'SET_SOLUTION', solution })
       } else if (type === 'ERROR') {
-        // show error to user via app dialog (use reducer actions)
         dispatch({ type: 'SET_ERROR_MESSAGE', error: error ?? 'Unknown error from worker' })
         dispatch({ type: 'SET_SHOW_ERROR_DIALOG', show: true })
       }
@@ -78,38 +77,38 @@ export function useTimberState() {
   }, [])
 
   // Action helpers
-  const addTimber = useCallback(() => dispatch({ type: 'ADD_TIMBER' }), [])
-  const removeTimber = useCallback(
-    (index: number) => dispatch({ type: 'REMOVE_TIMBER', index }),
+  const addSheet = useCallback(() => dispatch({ type: 'ADD_SHEET' }), [])
+  const removeSheet = useCallback(
+    (index: number) => dispatch({ type: 'REMOVE_SHEET', index }),
     []
   )
-  const updateTimber = useCallback(
-    (index: number, field: keyof TimberStock, value: number) =>
-      dispatch({ type: 'UPDATE_TIMBER', index, field, value }),
-    []
-  )
-
-  const addCut = useCallback(() => dispatch({ type: 'ADD_CUT' }), [])
-  const removeCut = useCallback((index: number) => dispatch({ type: 'REMOVE_CUT', index }), [])
-  const updateCut = useCallback(
-    (index: number, field: keyof RequiredCut, value: number) =>
-      dispatch({ type: 'UPDATE_CUT', index, field, value }),
+  const updateSheet = useCallback(
+    (index: number, field: keyof SheetStock, value: number) =>
+      dispatch({ type: 'UPDATE_SHEET', index, field, value }),
     []
   )
 
-  const addOwnedTimber = useCallback(() => dispatch({ type: 'ADD_OWNED' }), [])
-  const removeOwnedTimber = useCallback(
+  const addPanel = useCallback(() => dispatch({ type: 'ADD_PANEL' }), [])
+  const removePanel = useCallback((index: number) => dispatch({ type: 'REMOVE_PANEL', index }), [])
+  const updatePanel = useCallback(
+    (index: number, field: keyof RequiredPanel, value: number | string | boolean) =>
+      dispatch({ type: 'UPDATE_PANEL', index, field, value }),
+    []
+  )
+
+  const addOwnedSheet = useCallback(() => dispatch({ type: 'ADD_OWNED' }), [])
+  const removeOwnedSheet = useCallback(
     (index: number) => dispatch({ type: 'REMOVE_OWNED', index }),
     []
   )
-  const updateOwnedTimber = useCallback(
-    (index: number, field: keyof OwnedTimber, value: number) =>
+  const updateOwnedSheet = useCallback(
+    (index: number, field: keyof OwnedSheet, value: number) =>
       dispatch({ type: 'UPDATE_OWNED', index, field, value }),
     []
   )
 
   const setSolution = useCallback(
-    (solution: Solution | null) => dispatch({ type: 'SET_SOLUTION', solution }),
+    (solution: SheetSolution | null) => dispatch({ type: 'SET_SOLUTION', solution }),
     []
   )
   const setKerf = useCallback((kerf: number) => dispatch({ type: 'SET_KERF', kerf }), [])
@@ -124,7 +123,7 @@ export function useTimberState() {
     []
   )
   const setProjects = useCallback(
-    (projects: Project[]) => dispatch({ type: 'SET_PROJECTS', projects }),
+    (projects: SheetProject[]) => dispatch({ type: 'SET_PROJECTS', projects }),
     []
   )
   const setShowSaveDialog = useCallback(
@@ -135,17 +134,15 @@ export function useTimberState() {
     (show: boolean) => dispatch({ type: 'SET_SHOW_LOAD_DIALOG', show }),
     []
   )
-
   const setShowErrorDialog = useCallback((show: boolean) => dispatch({ type: 'SET_SHOW_ERROR_DIALOG', show }), [])
-
   const setErrorMessage = useCallback((error: string | null) => dispatch({ type: 'SET_ERROR_MESSAGE', error }), [])
-  const setTimbers = useCallback(
-    (timbers: TimberStock[]) => dispatch({ type: 'SET_TIMBERS', timbers }),
+  const setSheets = useCallback(
+    (sheets: SheetStock[]) => dispatch({ type: 'SET_SHEETS', sheets }),
     []
   )
-  const setCuts = useCallback((cuts: RequiredCut[]) => dispatch({ type: 'SET_CUTS', cuts }), [])
-  const setOwnedTimbers = useCallback(
-    (ownedTimbers: OwnedTimber[]) => dispatch({ type: 'SET_OWNED_TIMBERS', ownedTimbers }),
+  const setPanels = useCallback((panels: RequiredPanel[]) => dispatch({ type: 'SET_PANELS', panels }), [])
+  const setOwnedSheets = useCallback(
+    (ownedSheets: OwnedSheet[]) => dispatch({ type: 'SET_OWNED_SHEETS', ownedSheets }),
     []
   )
   const resetToNewProject = useCallback(() => dispatch({ type: 'RESET_TO_NEW_PROJECT' }), [])
@@ -153,13 +150,13 @@ export function useTimberState() {
   const calculate = useCallback(() => {
     dispatch({ type: 'SET_IS_CALCULATING', isCalculating: true })
     workerRef.current?.postMessage({
-      availableTimbers: state.timbers,
-      requiredCuts: state.cuts,
+      availableSheets: state.sheets,
+      requiredPanels: state.panels,
       kerf: state.kerf,
       mode: state.mode,
-      ownedTimbers: state.ownedTimbers,
+      ownedSheets: state.ownedSheets,
     })
-  }, [state.timbers, state.cuts, state.kerf, state.mode, state.ownedTimbers])
+  }, [state.sheets, state.panels, state.kerf, state.mode, state.ownedSheets])
 
   const handleSaveProject = useCallback(() => {
     if (!state.projectName.trim()) {
@@ -167,27 +164,27 @@ export function useTimberState() {
       return
     }
 
-    const project = saveProject({
+    const project = saveSheetProject({
       id: state.currentProjectId || undefined,
       name: state.projectName,
-      timbers: state.timbers,
-      cuts: state.cuts,
-      ownedTimbers: state.ownedTimbers,
+      sheets: state.sheets,
+      panels: state.panels,
+      ownedSheets: state.ownedSheets,
       kerf: state.kerf,
       mode: state.mode,
       unit: state.unit,
     })
 
     setProjectId(project.id)
-    setProjects(getAllProjects())
+    setProjects(getAllSheetProjects())
     setShowSaveDialog(false)
     alert('Project saved successfully!')
   }, [
     state.projectName,
     state.currentProjectId,
-    state.timbers,
-    state.cuts,
-    state.ownedTimbers,
+    state.sheets,
+    state.panels,
+    state.ownedSheets,
     state.kerf,
     state.mode,
     state.unit,
@@ -196,35 +193,34 @@ export function useTimberState() {
     setShowSaveDialog,
   ])
 
-  const setTimberValuesForLoad = useCallback(
-    (project: Project) => {
-      setTimbers(project.timbers)
-      setCuts(project.cuts)
-      setOwnedTimbers(project.ownedTimbers)
+  const setSheetValuesForLoad = useCallback(
+    (project: SheetProject) => {
+      setSheets(project.sheets)
+      setPanels(project.panels)
+      setOwnedSheets(project.ownedSheets)
       setKerf(project.kerf)
       setMode(project.mode)
       setUnit(project.unit)
       setProjectId(project.id)
       setProjectName(project.name)
     },
-    [setTimbers, setCuts, setOwnedTimbers, setKerf, setMode, setUnit, setProjectId, setProjectName]
+    [setSheets, setPanels, setOwnedSheets, setKerf, setMode, setUnit, setProjectId, setProjectName]
   )
 
   const handleLoadProject = useCallback(
-    (project: Project) => {
-      // NOTE: dispatching multiple times intentionally for clarity; can be batched if needed
-      setTimberValuesForLoad(project)
+    (project: SheetProject) => {
+      setSheetValuesForLoad(project)
       setShowLoadDialog(false)
       setSolution(null)
     },
-    [setTimberValuesForLoad, setShowLoadDialog, setSolution]
+    [setSheetValuesForLoad, setShowLoadDialog, setSolution]
   )
 
   const handleDeleteProject = useCallback(
     (id: string) => {
       if (confirm('Are you sure you want to delete this project?')) {
-        deleteProject(id)
-        setProjects(getAllProjects())
+        deleteSheetProject(id)
+        setProjects(getAllSheetProjects())
         if (state.currentProjectId === id) {
           setProjectId(null)
           setProjectName('')
@@ -241,11 +237,10 @@ export function useTimberState() {
   const store = useMemo(
     () => ({
       ...state,
-      // set* functions for UI needs
       setProjectName,
-      setTimbers,
-      setCuts,
-      setOwnedTimbers,
+      setSheets,
+      setPanels,
+      setOwnedSheets,
       setShowSaveDialog,
       setShowLoadDialog,
       setUnit,
@@ -253,16 +248,15 @@ export function useTimberState() {
       setMode,
       setShowErrorDialog,
       setErrorMessage,
-      // actions
-      addTimber,
-      removeTimber,
-      updateTimber,
-      addCut,
-      removeCut,
-      updateCut,
-      addOwnedTimber,
-      removeOwnedTimber,
-      updateOwnedTimber,
+      addSheet,
+      removeSheet,
+      updateSheet,
+      addPanel,
+      removePanel,
+      updatePanel,
+      addOwnedSheet,
+      removeOwnedSheet,
+      updateOwnedSheet,
       calculate,
       handleSaveProject,
       handleLoadProject,
@@ -272,9 +266,9 @@ export function useTimberState() {
     [
       state,
       setProjectName,
-      setTimbers,
-      setCuts,
-      setOwnedTimbers,
+      setSheets,
+      setPanels,
+      setOwnedSheets,
       setShowSaveDialog,
       setShowLoadDialog,
       setUnit,
@@ -282,15 +276,15 @@ export function useTimberState() {
       setMode,
       setShowErrorDialog,
       setErrorMessage,
-      addTimber,
-      removeTimber,
-      updateTimber,
-      addCut,
-      removeCut,
-      updateCut,
-      addOwnedTimber,
-      removeOwnedTimber,
-      updateOwnedTimber,
+      addSheet,
+      removeSheet,
+      updateSheet,
+      addPanel,
+      removePanel,
+      updatePanel,
+      addOwnedSheet,
+      removeOwnedSheet,
+      updateOwnedSheet,
       calculate,
       handleSaveProject,
       handleLoadProject,
@@ -302,4 +296,4 @@ export function useTimberState() {
   return store
 }
 
-export type TimberStore = ReturnType<typeof useTimberState>
+export type SheetStore = ReturnType<typeof useSheetState>
