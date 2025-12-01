@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import ProjectToolbar from './ProjectToolbar'
-import { type Project, createTimberShareUrl } from '@/lib/storage'
+import { type Project, createTimberShareUrl, validateTimberImport, createTimberExportData } from '@/lib/storage'
 
 // Mock SettingsDialog since it's complex and tested separately (or should be)
 vi.mock('@/components/SettingsDialog', () => ({
@@ -26,7 +26,7 @@ describe('ProjectToolbar', () => {
 
   const mockProps = {
     projectType: 'linear' as const,
-    createShareUrl: createTimberShareUrl,
+    createShareUrl: () => createTimberShareUrl('', [], [], [], 3, 'cost', 'mm'),
     projectName: '',
     setProjectName: vi.fn(),
     projects: mockProjects,
@@ -44,9 +44,8 @@ describe('ProjectToolbar', () => {
     setUnit: vi.fn(),
     mode: 'cost' as const,
     setMode: vi.fn(),
-    timbers: [],
-    cuts: [],
-    ownedTimbers: [],
+    exportData: () => createTimberExportData('', [], [], [], 3, 'cost', 'mm'),
+    validateImport: validateTimberImport,
   }
 
   it('renders all main buttons', () => {
