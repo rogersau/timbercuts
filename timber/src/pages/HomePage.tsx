@@ -2,17 +2,11 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Ruler, Grid3X3 } from 'lucide-react'
+import Layout from '@/components/Layout'
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <div className="text-center space-y-4 pt-8">
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">Cut Optimiser</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Minimise waste and cost for your cutting needs. Choose your cutting mode below.
-          </p>
-        </div>
+    <Layout title="Cut Optimiser" description="Minimise waste and cost for your cutting needs. Choose your cutting mode below.">
 
         <div className="grid sm:grid-cols-2 gap-6 pt-8">
           <Link to="/linear" className="block">
@@ -63,7 +57,6 @@ export default function HomePage() {
             </Card>
           </Link>
         </div>
-      </div>
-    </div>
+</Layout>
   )
 }
