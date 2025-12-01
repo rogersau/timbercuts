@@ -39,7 +39,7 @@ jobs:
 
       - name: Run tests
         working-directory: timber
-        run: pnpm test --passWithNoTests --run
+        run: pnpm test -- --passWithNoTests --run
 
       - name: Build
         working-directory: timber
