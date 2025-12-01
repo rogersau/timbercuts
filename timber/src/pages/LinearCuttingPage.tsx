@@ -5,13 +5,15 @@ import { useTimberState } from '@/hooks/useTimberState'
 import TimberStockList from '@/components/TimberStockList'
 import OwnedTimberList from '@/components/OwnedTimberList'
 import CutsList from '@/components/CutsList'
-import ProjectDialogs from '@/components/ProjectDialogs'
+import { ProjectToolbar } from '@/components/ProjectToolbar'
 import Layout from '@/components/Layout'
 import ControlPanel from '@/components/ControlPanel'
 import ErrorDialog from '@/components/ErrorDialog'
 import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
+import { createTimberShareUrl, createTimberExportData, validateTimberImport } from '@/lib/storage'
+import { useCallback } from 'react'
 
 export default function LinearCuttingPage() {
   const location = useLocation()
@@ -59,6 +61,16 @@ export default function LinearCuttingPage() {
     handleNewProject,
   } = store
 
+  const createShareUrl = useCallback(() => 
+    createTimberShareUrl(projectName, timbers, cuts, ownedTimbers, kerf, mode, unit),
+    [projectName, timbers, cuts, ownedTimbers, kerf, mode, unit]
+  )
+
+  const exportData = useCallback(() => 
+    createTimberExportData(projectName, timbers, cuts, ownedTimbers, kerf, mode, unit),
+    [projectName, timbers, cuts, ownedTimbers, kerf, mode, unit]
+  )
+
   return (
     <TooltipProvider>
       <Layout projectName={projectName} currentProjectId={currentProjectId} title="Linear Cut Optimiser">
@@ -73,7 +85,7 @@ export default function LinearCuttingPage() {
         </div>
 
         {/* Project Management Buttons */}
-        <ProjectDialogs
+        <ProjectToolbar
           projectName={projectName}
           setProjectName={setProjectName}
           projects={projects}
@@ -91,9 +103,10 @@ export default function LinearCuttingPage() {
           setUnit={setUnit}
           mode={mode}
           setMode={setMode}
-          timbers={timbers}
-          cuts={cuts}
-          ownedTimbers={ownedTimbers}
+          createShareUrl={createShareUrl}
+          exportData={exportData}
+          validateImport={validateTimberImport}
+          saveDescription="Save your timber cuts configuration to local storage"
         />
 
         <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">

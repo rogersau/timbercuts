@@ -379,3 +379,100 @@ export function getShareDataFromUrl(): ShareableData | null {
   if (!match) return null
   return decodeShareData(match[1])
 }
+
+/**
+ * Validates and parses imported timber project JSON.
+ */
+export function validateTimberImport(json: unknown): Project | null {
+  const data = json as Record<string, unknown>
+  if (!Array.isArray(data.timbers) || !Array.isArray(data.cuts)) {
+    return null
+  }
+  return {
+    id: 'imported-' + Date.now(),
+    name: (data.name as string) || 'Imported Project',
+    timbers: data.timbers,
+    cuts: data.cuts,
+    ownedTimbers: (data.ownedTimbers as []) || [],
+    kerf: (data.kerf as number) || 3,
+    mode: (data.mode as 'cost' | 'waste') || 'cost',
+    unit: (data.unit as 'mm' | 'in') || 'mm',
+    createdAt: (data.createdAt as number) || Date.now(),
+    updatedAt: (data.updatedAt as number) || Date.now(),
+  }
+}
+
+/**
+ * Validates and parses imported sheet project JSON.
+ */
+export function validateSheetImport(json: unknown): SheetProject | null {
+  const data = json as Record<string, unknown>
+  if (!Array.isArray(data.sheets) || !Array.isArray(data.panels)) {
+    return null
+  }
+  return {
+    id: 'imported-' + Date.now(),
+    name: (data.name as string) || 'Imported Sheet Project',
+    sheets: data.sheets,
+    panels: data.panels,
+    ownedSheets: (data.ownedSheets as []) || [],
+    kerf: (data.kerf as number) || 3,
+    mode: (data.mode as 'cost' | 'waste') || 'cost',
+    unit: (data.unit as 'mm' | 'in') || 'mm',
+    grainEnabled: (data.grainEnabled as boolean) || false,
+    createdAt: (data.createdAt as number) || Date.now(),
+    updatedAt: (data.updatedAt as number) || Date.now(),
+  }
+}
+
+/**
+ * Creates export data object for timber project.
+ */
+export function createTimberExportData(
+  projectName: string,
+  timbers: TimberStock[],
+  cuts: RequiredCut[],
+  ownedTimbers: OwnedTimber[],
+  kerf: number,
+  mode: 'cost' | 'waste',
+  unit: 'mm' | 'in'
+) {
+  return {
+    name: projectName || 'Untitled Project',
+    timbers,
+    cuts,
+    ownedTimbers,
+    kerf,
+    mode,
+    unit,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  }
+}
+
+/**
+ * Creates export data object for sheet project.
+ */
+export function createSheetExportData(
+  projectName: string,
+  sheets: SheetStock[],
+  panels: RequiredPanel[],
+  ownedSheets: OwnedSheet[],
+  kerf: number,
+  mode: 'cost' | 'waste',
+  unit: 'mm' | 'in',
+  grainEnabled: boolean
+) {
+  return {
+    name: projectName || 'Untitled Sheet Project',
+    sheets,
+    panels,
+    ownedSheets,
+    kerf,
+    mode,
+    unit,
+    grainEnabled,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  }
+}

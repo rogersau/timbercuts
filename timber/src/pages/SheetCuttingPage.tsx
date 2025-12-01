@@ -5,13 +5,15 @@ import { useSheetState } from '@/hooks/useSheetState'
 import SheetStockList from '@/components/SheetStockList'
 import OwnedSheetList from '@/components/OwnedSheetList'
 import PanelList from '@/components/PanelList'
-import SheetProjectDialogs from '@/components/SheetProjectDialogs'
+import { ProjectToolbar } from '@/components/ProjectToolbar'
 import ControlPanel from '@/components/ControlPanel'
 import ErrorDialog from '@/components/ErrorDialog'
 import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import Layout from '@/components/Layout'
+import { createSheetShareUrl, createSheetExportData, validateSheetImport } from '@/lib/storage'
+import { useCallback } from 'react'
 
 export default function SheetCuttingPage() {
   const location = useLocation()
@@ -61,6 +63,16 @@ export default function SheetCuttingPage() {
     handleNewProject,
   } = store
 
+  const createShareUrl = useCallback(() => 
+    createSheetShareUrl(projectName, sheets, panels, ownedSheets, kerf, mode, unit, grainEnabled),
+    [projectName, sheets, panels, ownedSheets, kerf, mode, unit, grainEnabled]
+  )
+
+  const exportData = useCallback(() => 
+    createSheetExportData(projectName, sheets, panels, ownedSheets, kerf, mode, unit, grainEnabled),
+    [projectName, sheets, panels, ownedSheets, kerf, mode, unit, grainEnabled]
+  )
+
   return (
     <TooltipProvider>
     
@@ -77,7 +89,7 @@ export default function SheetCuttingPage() {
           </div>
 
           {/* Project Management */}
-          <SheetProjectDialogs
+          <ProjectToolbar
             projectName={projectName}
             setProjectName={setProjectName}
             projects={projects}
@@ -97,9 +109,11 @@ export default function SheetCuttingPage() {
             setMode={setMode}
             grainEnabled={grainEnabled}
             setGrainEnabled={setGrainEnabled}
-            sheets={sheets}
-            panels={panels}
-            ownedSheets={ownedSheets}
+            showGrainOption={true}
+            createShareUrl={createShareUrl}
+            exportData={exportData}
+            validateImport={validateSheetImport}
+            saveDescription="Save your sheet cutting configuration to local storage"
           />
 
           <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">

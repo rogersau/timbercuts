@@ -10,37 +10,56 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Separator } from "@/components/ui/separator"
-import { type SheetProject, createSheetShareUrl } from '@/lib/storage'
-import { type SheetStock, type RequiredPanel, type OwnedSheet } from '@/lib/sheet-optimizer'
 import { SettingsDialog } from '@/components/SettingsDialog'
 import { useRef, useState, useEffect } from 'react'
 
-type Props = {
+// Generic project type for the toolbar
+export type BaseProject = {
+  id: string
+  name: string
+  createdAt: number
+  updatedAt: number
+}
+
+type Props<TProject extends BaseProject> = {
+  // Project management
   projectName: string
   setProjectName: (name: string) => void
-  projects: SheetProject[]
+  projects: TProject[]
   showSaveDialog: boolean
   showLoadDialog: boolean
   setShowSaveDialog: (b: boolean) => void
   setShowLoadDialog: (b: boolean) => void
   handleSaveProject: () => void
-  handleLoadProject: (p: SheetProject) => void
+  handleLoadProject: (p: TProject) => void
   handleDeleteProject: (id: string) => void
   handleNewProject: () => void
+  
+  // Settings
   kerf: number
   setKerf: (kerf: number) => void
   unit: 'mm' | 'in'
   setUnit: (unit: 'mm' | 'in') => void
   mode: 'cost' | 'waste'
   setMode: (mode: 'cost' | 'waste') => void
-  grainEnabled: boolean
-  setGrainEnabled: (enabled: boolean) => void
-  sheets: SheetStock[]
-  panels: RequiredPanel[]
-  ownedSheets: OwnedSheet[]
+  
+  // Optional grain settings (for sheet projects)
+  grainEnabled?: boolean
+  setGrainEnabled?: (enabled: boolean) => void
+  showGrainOption?: boolean
+  
+  // Share URL generator
+  createShareUrl: () => string
+  
+  // Export/Import
+  exportData: () => object
+  validateImport: (data: unknown) => TProject | null
+  
+  // Labels
+  saveDescription?: string
 }
 
-export function SheetProjectDialogs(props: Props) {
+export function ProjectToolbar<TProject extends BaseProject>(props: Props<TProject>) {
   const {
     projectName,
     setProjectName,
@@ -61,9 +80,11 @@ export function SheetProjectDialogs(props: Props) {
     setMode,
     grainEnabled,
     setGrainEnabled,
-    sheets,
-    panels,
-    ownedSheets,
+    showGrainOption = false,
+    createShareUrl,
+    exportData,
+    validateImport,
+    saveDescription = 'Save your configuration to local storage',
   } = props
 
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -74,32 +95,12 @@ export function SheetProjectDialogs(props: Props) {
   // Keep share URL in sync with current state while dialog is open
   useEffect(() => {
     if (showShareDialog) {
-      const url = createSheetShareUrl(
-        projectName,
-        sheets,
-        panels,
-        ownedSheets,
-        kerf,
-        mode,
-        unit,
-        grainEnabled
-      )
-      setShareUrl(url)
+      setShareUrl(createShareUrl())
     }
-  }, [showShareDialog, projectName, sheets, panels, ownedSheets, kerf, mode, unit, grainEnabled])
+  }, [showShareDialog, createShareUrl])
 
   const handleShare = () => {
-    const url = createSheetShareUrl(
-      projectName,
-      sheets,
-      panels,
-      ownedSheets,
-      kerf,
-      mode,
-      unit,
-      grainEnabled
-    )
-    setShareUrl(url)
+    setShareUrl(createShareUrl())
     setShowShareDialog(true)
     setCopied(false)
   }
@@ -122,23 +123,13 @@ export function SheetProjectDialogs(props: Props) {
   }
 
   const handleExport = () => {
-    const data = {
-      name: projectName || 'Untitled Sheet Project',
-      sheets,
-      panels,
-      ownedSheets,
-      kerf,
-      mode,
-      unit,
-      grainEnabled,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    }
+    const data = exportData()
+    const name = (data as { name?: string }).name || 'project'
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${data.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`
+    a.download = `${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -153,23 +144,10 @@ export function SheetProjectDialogs(props: Props) {
     reader.onload = (event) => {
       try {
         const json = JSON.parse(event.target?.result as string)
-        if (!Array.isArray(json.sheets) || !Array.isArray(json.panels)) {
-          throw new Error('Invalid sheet project file format')
+        const project = validateImport(json)
+        if (!project) {
+          throw new Error('Invalid project file format')
         }
-        
-        const project: SheetProject = {
-          id: 'imported-' + Date.now(),
-          name: json.name || 'Imported Sheet Project',
-          sheets: json.sheets,
-          panels: json.panels,
-          ownedSheets: json.ownedSheets || [],
-          kerf: json.kerf || 3,
-          mode: json.mode || 'cost',
-          unit: json.unit || 'mm',
-          createdAt: json.createdAt || Date.now(),
-          updatedAt: json.updatedAt || Date.now(),
-        }
-        
         handleLoadProject(project)
         if (fileInputRef.current) fileInputRef.current.value = ''
       } catch (error) {
@@ -196,9 +174,7 @@ export function SheetProjectDialogs(props: Props) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Save Project</DialogTitle>
-            <DialogDescription>
-              Save your sheet cutting configuration to local storage
-            </DialogDescription>
+            <DialogDescription>{saveDescription}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -263,9 +239,9 @@ export function SheetProjectDialogs(props: Props) {
           </div>
         </DialogContent>
       </Dialog>
-      
+
       <Separator orientation="vertical" />
-      
+
       <SettingsDialog
         kerf={kerf}
         setKerf={setKerf}
@@ -275,9 +251,9 @@ export function SheetProjectDialogs(props: Props) {
         setMode={setMode}
         grainEnabled={grainEnabled}
         setGrainEnabled={setGrainEnabled}
-        showGrainOption={true}
+        showGrainOption={showGrainOption}
       />
-      
+
       <Button variant="outline" size="sm" onClick={handleExport}>
         <Download className="h-4 w-4" />
         <span className="hidden sm:inline">Export</span>
@@ -297,8 +273,7 @@ export function SheetProjectDialogs(props: Props) {
         </Button>
       </div>
 
-
-            <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
         <DialogTrigger asChild>
           <Button variant="outline" size="sm" onClick={handleShare}>
             <Share2 className="h-4 w-4" />
@@ -333,4 +308,4 @@ export function SheetProjectDialogs(props: Props) {
   )
 }
 
-export default SheetProjectDialogs
+export default ProjectToolbar
