@@ -60,7 +60,7 @@ export default function LinearCuttingPage() {
 
   return (
     <TooltipProvider>
-      <Layout projectName={projectName} currentProjectId={currentProjectId}>
+      <Layout projectName={projectName} currentProjectId={currentProjectId} title="Linear Cut Optimiser">
         {/* Back button */}
         <div className="flex justify-start mb-2">
           <Link to="/">

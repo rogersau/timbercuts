@@ -19,15 +19,16 @@ type Props = {
 
 export function SheetStockList({ sheets, unit, addSheet, removeSheet, updateSheet }: Props) {
   return (
-    <div>
+    <div className="space-y-2">
       {sheets.map((sheet, index) => (
-        <div key={index} className="flex gap-2 items-center py-1 flex-wrap sm:flex-nowrap">
-          <div className="flex-1 min-w-[100px]">
+        <div key={index} className="flex flex-wrap sm:flex-nowrap gap-2 items-center py-2 border-b border-border last:border-0 sm:py-0 sm:border-0">
+          {/* Width */}
+          <div className="flex-1 min-w-[calc(50%-1rem)] sm:min-w-0">
             <InputGroup>
               <InputGroupInput
                 type="number"
                 value={sheet.width ? mmToDisplayNumber(sheet.width, unit) : ''}
-                placeholder={`Width`}
+                placeholder="Width"
                 onChange={(e) =>
                   updateSheet(index, 'width', displayToMM(Number(e.target.value), unit))
                 }
@@ -37,13 +38,14 @@ export function SheetStockList({ sheets, unit, addSheet, removeSheet, updateShee
               </InputGroupAddon>
             </InputGroup>
           </div>
-          <span className="text-muted-foreground">×</span>
-          <div className="flex-1 min-w-[100px]">
+          <span className="text-muted-foreground text-sm hidden sm:inline">×</span>
+          {/* Height */}
+          <div className="flex-1 min-w-[calc(50%-1rem)] sm:min-w-0">
             <InputGroup>
               <InputGroupInput
                 type="number"
                 value={sheet.height ? mmToDisplayNumber(sheet.height, unit) : ''}
-                placeholder={`Height`}
+                placeholder="Height"
                 onChange={(e) =>
                   updateSheet(index, 'height', displayToMM(Number(e.target.value), unit))
                 }
@@ -53,7 +55,8 @@ export function SheetStockList({ sheets, unit, addSheet, removeSheet, updateShee
               </InputGroupAddon>
             </InputGroup>
           </div>
-          <div className="w-28">
+          {/* Price */}
+          <div className="flex-1 min-w-[calc(50%-1rem)] sm:min-w-0 sm:max-w-28">
             <InputGroup>
               <InputGroupAddon>
                 <InputGroupText>$</InputGroupText>
@@ -67,9 +70,11 @@ export function SheetStockList({ sheets, unit, addSheet, removeSheet, updateShee
               />
             </InputGroup>
           </div>
+          {/* Delete */}
           <Button
             variant="outline"
             size="icon"
+            className="shrink-0"
             onClick={() => removeSheet(index)}
             disabled={sheets.length === 1}
           >

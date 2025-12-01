@@ -19,10 +19,11 @@ type Props = {
 
 export function PanelList({ panels, unit, addPanel, removePanel, updatePanel }: Props) {
   return (
-    <div>
+    <div className="space-y-2">
       {panels.map((panel, index) => (
-        <div key={index} className="flex gap-2 items-center py-1 flex-wrap sm:flex-nowrap">
-          <div className="flex-1 min-w-[80px]">
+        <div key={index} className="flex flex-wrap sm:flex-nowrap gap-2 items-center py-2 border-b border-border last:border-0 sm:py-0 sm:border-0">
+          {/* Width */}
+          <div className="flex-1 min-w-[calc(50%-1rem)] sm:min-w-0">
             <InputGroup>
               <InputGroupInput
                 type="number"
@@ -37,8 +38,9 @@ export function PanelList({ panels, unit, addPanel, removePanel, updatePanel }: 
               </InputGroupAddon>
             </InputGroup>
           </div>
-          <span className="text-muted-foreground">×</span>
-          <div className="flex-1 min-w-[80px]">
+          <span className="text-muted-foreground text-sm hidden sm:inline">×</span>
+          {/* Height */}
+          <div className="flex-1 min-w-[calc(50%-1rem)] sm:min-w-0">
             <InputGroup>
               <InputGroupInput
                 type="number"
@@ -53,22 +55,25 @@ export function PanelList({ panels, unit, addPanel, removePanel, updatePanel }: 
               </InputGroupAddon>
             </InputGroup>
           </div>
-          <div className="w-20">
+          {/* Quantity */}
+          <div className="flex-1 min-w-[calc(50%-1rem)] sm:min-w-0 sm:max-w-20">
             <InputGroup>
               <InputGroupAddon>
                 <InputGroupText>×</InputGroupText>
               </InputGroupAddon>
               <InputGroupInput
-                placeholder="Qty"
+                placeholder="1"
                 value={panel.quantity || ''}
                 onChange={(e) => updatePanel(index, 'quantity', Number(e.target.value))}
                 type="number"
               />
             </InputGroup>
           </div>
+          {/* Delete */}
           <Button
             variant="outline"
             size="icon"
+            className="shrink-0"
             onClick={() => removePanel(index)}
             disabled={panels.length === 1}
           >
