@@ -10,7 +10,7 @@ export default function HomePage() {
 
         <div className="grid sm:grid-cols-2 gap-6 pt-8">
           <Link to="/linear" className="block">
-            <Card className="h-full hover:border-primary hover:shadow-lg transition-all cursor-pointer group">
+            <Card className="h-full hover:border-primary hover:shadow-lg transition-all cursor-pointer group flex flex-col">
               <CardHeader className="text-center pb-2">
                 <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                   <Ruler className="w-8 h-8 text-primary" />
@@ -20,21 +20,23 @@ export default function HomePage() {
                   Optimise cuts for timber lengths, pipes, rods, and other linear materials
                 </CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
+              <CardContent className="text-center flex flex-col flex-1">
                 <ul className="text-sm text-muted-foreground space-y-1">
                   <li>• Define available stock lengths</li>
                   <li>• Specify required cut lengths</li>
                   <li>• Minimise waste and cost</li>
                 </ul>
-                <Button className="mt-6 w-full" size="lg">
-                  Start Linear Cutting
-                </Button>
+                <div className="mt-auto pt-4">
+                  <Button className="w-full" size="lg">
+                    Start Linear Cutting
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </Link>
 
           <Link to="/sheet" className="block">
-            <Card className="h-full hover:border-primary hover:shadow-lg transition-all cursor-pointer group">
+            <Card className="h-full hover:border-primary hover:shadow-lg transition-all cursor-pointer group flex flex-col">
               <CardHeader className="text-center pb-2">
                 <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                   <Grid3X3 className="w-8 h-8 text-primary" />
@@ -44,16 +46,18 @@ export default function HomePage() {
                   Optimise cuts for plywood, MDF, sheet metal, and other panel materials
                 </CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
+              <CardContent className="text-center flex flex-col flex-1">
                 <ul className="text-sm text-muted-foreground space-y-1">
                   <li>• Define available sheet sizes</li>
                   <li>• Specify required panel dimensions</li>
                   <li>• Visual cutting layout</li>
                   <li>• Optionally follow grain direction</li>
                 </ul>
-                <Button className="mt-6 w-full" size="lg">
-                  Start Sheet Cutting
-                </Button>
+                <div className="mt-auto pt-4">
+                  <Button className="w-full" size="lg">
+                    Start Sheet Cutting
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </Link>
