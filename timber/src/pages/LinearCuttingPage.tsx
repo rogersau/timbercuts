@@ -9,12 +9,13 @@ import ProjectDialogs from '@/components/ProjectDialogs'
 import Layout from '@/components/Layout'
 import ControlPanel from '@/components/ControlPanel'
 import ErrorDialog from '@/components/ErrorDialog'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 
 export default function LinearCuttingPage() {
-  const store = useTimberState()
+  const location = useLocation()
+  const store = useTimberState(location.search)
   const {
     timbers,
     cuts,

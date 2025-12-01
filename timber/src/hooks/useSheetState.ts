@@ -6,11 +6,11 @@ import {
   type OwnedSheet,
   type GrainDirection,
 } from '@/lib/sheet-optimizer'
-import { getAllSheetProjects, saveSheetProject, deleteSheetProject, saveSheetDraft, getSheetDraft, type SheetProject } from '@/lib/storage'
+import { getAllSheetProjects, saveSheetProject, deleteSheetProject, saveSheetDraft, getSheetDraft, decodeShareData, type SheetProject, type ShareableSheetData } from '@/lib/storage'
 import SheetOptimizerWorker from '@/workers/sheet-optimizer.worker?worker'
 import { sheetReducer, defaultSheets, defaultPanels } from '@/reducers/sheetReducer'
 
-export function useSheetState() {
+export function useSheetState(searchString: string = '') {
   const [state, dispatch] = useReducer(sheetReducer, {
     sheets: defaultSheets,
     panels: defaultPanels,
@@ -32,8 +32,31 @@ export function useSheetState() {
 
   const workerRef = useRef<Worker | null>(null)
 
-  // Load draft on mount
+  // Load from share URL or draft on mount
   useEffect(() => {
+    // Parse share param from search string (e.g., "?share=...")
+    const params = new URLSearchParams(searchString)
+    const shareParam = params.get('share')
+    
+    if (shareParam) {
+      const shareData = decodeShareData(shareParam)
+      if (shareData && shareData.t === 'sheet') {
+        const data = shareData as ShareableSheetData
+        dispatch({ type: 'SET_SHEETS', sheets: data.s })
+        dispatch({ type: 'SET_PANELS', panels: data.p })
+        dispatch({ type: 'SET_OWNED_SHEETS', ownedSheets: data.o })
+        dispatch({ type: 'SET_KERF', kerf: data.k })
+        dispatch({ type: 'SET_MODE', mode: data.m })
+        dispatch({ type: 'SET_UNIT', unit: data.u })
+        if (data.g !== undefined) dispatch({ type: 'SET_GRAIN_ENABLED', grainEnabled: data.g })
+        dispatch({ type: 'SET_PROJECT_NAME', name: data.n + ' (Shared)' })
+        // Clear share param from URL
+        const newHash = window.location.hash.replace(/\?share=[^&]+/, '').replace(/&share=[^&]+/, '')
+        window.history.replaceState({}, '', window.location.pathname + newHash)
+        return
+      }
+    }
+    
     const draft = getSheetDraft()
     if (draft && !state.currentProjectId) {
       if (draft.sheets) dispatch({ type: 'SET_SHEETS', sheets: draft.sheets })

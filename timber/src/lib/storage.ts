@@ -248,3 +248,134 @@ export function getSheetDraft(): Partial<SheetProject> | null {
     return null
   }
 }
+
+// ============ URL Share Functions ============
+
+export type ShareableTimberData = {
+  t: 'linear'
+  n: string // name
+  ti: TimberStock[] // timbers
+  c: RequiredCut[] // cuts
+  o: OwnedTimber[] // owned
+  k: number // kerf
+  m: 'cost' | 'waste' // mode
+  u: 'mm' | 'in' // unit
+}
+
+export type ShareableSheetData = {
+  t: 'sheet'
+  n: string
+  s: SheetStock[] // sheets
+  p: RequiredPanel[] // panels
+  o: OwnedSheet[] // owned
+  k: number
+  m: 'cost' | 'waste'
+  u: 'mm' | 'in'
+  g?: boolean // grainEnabled
+}
+
+export type ShareableData = ShareableTimberData | ShareableSheetData
+
+/**
+ * Encodes project data to a shareable URL hash string.
+ * Uses base64 encoding of compressed JSON.
+ */
+export function encodeShareData(data: ShareableData): string {
+  try {
+    const json = JSON.stringify(data)
+    // Use TextEncoder for proper UTF-8 handling
+    const bytes = new TextEncoder().encode(json)
+    // Convert to base64
+    const base64 = btoa(String.fromCharCode(...bytes))
+    // URL-safe base64
+    return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+  } catch (error) {
+    console.error('Error encoding share data:', error)
+    return ''
+  }
+}
+
+/**
+ * Decodes a shareable URL hash string back to project data.
+ */
+export function decodeShareData(hash: string): ShareableData | null {
+  try {
+    // Restore standard base64 from URL-safe version
+    let base64 = hash.replace(/-/g, '+').replace(/_/g, '/')
+    // Add padding if needed
+    while (base64.length % 4) base64 += '='
+    
+    const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+    const json = new TextDecoder().decode(bytes)
+    return JSON.parse(json) as ShareableData
+  } catch (error) {
+    console.error('Error decoding share data:', error)
+    return null
+  }
+}
+
+/**
+ * Creates a shareable URL for a timber project.
+ */
+export function createTimberShareUrl(
+  name: string,
+  timbers: TimberStock[],
+  cuts: RequiredCut[],
+  ownedTimbers: OwnedTimber[],
+  kerf: number,
+  mode: 'cost' | 'waste',
+  unit: 'mm' | 'in'
+): string {
+  const data: ShareableTimberData = {
+    t: 'linear',
+    n: name || 'Shared Project',
+    ti: timbers,
+    c: cuts,
+    o: ownedTimbers,
+    k: kerf,
+    m: mode,
+    u: unit,
+  }
+  const encoded = encodeShareData(data)
+  const baseUrl = window.location.origin + window.location.pathname
+  return `${baseUrl}#/linear?share=${encoded}`
+}
+
+/**
+ * Creates a shareable URL for a sheet project.
+ */
+export function createSheetShareUrl(
+  name: string,
+  sheets: SheetStock[],
+  panels: RequiredPanel[],
+  ownedSheets: OwnedSheet[],
+  kerf: number,
+  mode: 'cost' | 'waste',
+  unit: 'mm' | 'in',
+  grainEnabled?: boolean
+): string {
+  const data: ShareableSheetData = {
+    t: 'sheet',
+    n: name || 'Shared Project',
+    s: sheets,
+    p: panels,
+    o: ownedSheets,
+    k: kerf,
+    m: mode,
+    u: unit,
+    g: grainEnabled,
+  }
+  const encoded = encodeShareData(data)
+  const baseUrl = window.location.origin + window.location.pathname
+  return `${baseUrl}#/sheet?share=${encoded}`
+}
+
+/**
+ * Gets share data from current URL if present.
+ */
+export function getShareDataFromUrl(): ShareableData | null {
+  const hash = window.location.hash
+  const match = hash.match(/[?&]share=([^&]+)/)
+  if (!match) return null
+  return decodeShareData(match[1])
+}

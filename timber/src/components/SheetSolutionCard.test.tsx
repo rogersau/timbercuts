@@ -67,11 +67,17 @@ describe('SheetSolutionCard', () => {
 
   it('displays sheet dimensions', () => {
     render(<SheetSolutionCard solution={mockSolution} unit="mm" />)
-    expect(screen.getAllByText(/2400mm × 1200mm/)).toHaveLength(2)
+    expect(screen.getAllByText(/2400mm × 1200mm/)).toHaveLength(3) // 2 cutting plans + 1 shopping list
   })
 
   it('shows price for purchased sheets', () => {
     render(<SheetSolutionCard solution={mockSolution} unit="mm" />)
-    expect(screen.getByText(/@ \$150\.00/)).toBeInTheDocument()
+    expect(screen.getAllByText(/@ \$150\.00/)).toHaveLength(2) // shopping list + cutting plan
+  })
+
+  it('renders shopping list', () => {
+    render(<SheetSolutionCard solution={mockSolution} unit="mm" />)
+    expect(screen.getByText('🛒 Shopping List')).toBeInTheDocument()
+    expect(screen.getByText(/1× 2400mm × 1200mm/)).toBeInTheDocument()
   })
 })

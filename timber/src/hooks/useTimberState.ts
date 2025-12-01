@@ -5,11 +5,11 @@ import {
   type Solution,
   type OwnedTimber,
 } from '@/lib/timber-optimizer'
-import { getAllProjects, saveProject, deleteProject, saveDraft, getDraft, type Project } from '@/lib/storage'
+import { getAllProjects, saveProject, deleteProject, saveDraft, getDraft, decodeShareData, type Project, type ShareableTimberData } from '@/lib/storage'
 import OptimizerWorker from '@/workers/optimizer.worker?worker'
 import { reducer, defaultTimbers, defaultCuts } from '@/reducers/timberReducer'
 
-export function useTimberState() {
+export function useTimberState(searchString: string = '') {
   const [state, dispatch] = useReducer(reducer, {
     timbers: defaultTimbers,
     cuts: defaultCuts,
@@ -30,8 +30,30 @@ export function useTimberState() {
 
   const workerRef = useRef<Worker | null>(null)
 
-  // Load draft on mount
+  // Load from share URL or draft on mount
   useEffect(() => {
+    // Parse share param from search string (e.g., "?share=...")
+    const params = new URLSearchParams(searchString)
+    const shareParam = params.get('share')
+    
+    if (shareParam) {
+      const shareData = decodeShareData(shareParam)
+      if (shareData && shareData.t === 'linear') {
+        const data = shareData as ShareableTimberData
+        dispatch({ type: 'SET_TIMBERS', timbers: data.ti })
+        dispatch({ type: 'SET_CUTS', cuts: data.c })
+        dispatch({ type: 'SET_OWNED_TIMBERS', ownedTimbers: data.o })
+        dispatch({ type: 'SET_KERF', kerf: data.k })
+        dispatch({ type: 'SET_MODE', mode: data.m })
+        dispatch({ type: 'SET_UNIT', unit: data.u })
+        dispatch({ type: 'SET_PROJECT_NAME', name: data.n + ' (Shared)' })
+        // Clear share param from URL to avoid re-loading
+        const newHash = window.location.hash.replace(/\?share=[^&]+/, '').replace(/&share=[^&]+/, '')
+        window.history.replaceState({}, '', window.location.pathname + newHash)
+        return
+      }
+    }
+    
     const draft = getDraft()
     if (draft && !state.currentProjectId) {
       if (draft.timbers) dispatch({ type: 'SET_TIMBERS', timbers: draft.timbers })

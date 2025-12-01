@@ -1,4 +1,4 @@
-import { FolderOpen, Save, Plus, Trash2, Download, Upload } from 'lucide-react'
+import { FolderOpen, Save, Plus, Trash2, Download, Upload, Share2, Check, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -10,10 +10,10 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Separator } from "@/components/ui/separator"
-import { type Project } from '@/lib/storage'
+import { type Project, createTimberShareUrl } from '@/lib/storage'
 import { type TimberStock, type RequiredCut, type OwnedTimber } from '@/lib/timber-optimizer'
 import { SettingsDialog } from '@/components/SettingsDialog'
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 
 type Props = {
   projectName: string
@@ -63,6 +63,58 @@ export function ProjectDialogs(props: Props) {
   } = props
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [showShareDialog, setShowShareDialog] = useState(false)
+  const [shareUrl, setShareUrl] = useState('')
+  const [copied, setCopied] = useState(false)
+
+  // Keep share URL in sync with current state while dialog is open
+  useEffect(() => {
+    if (showShareDialog) {
+      const url = createTimberShareUrl(
+        projectName,
+        timbers,
+        cuts,
+        ownedTimbers,
+        kerf,
+        mode,
+        unit
+      )
+      setShareUrl(url)
+    }
+  }, [showShareDialog, projectName, timbers, cuts, ownedTimbers, kerf, mode, unit])
+
+  const handleShare = () => {
+    const url = createTimberShareUrl(
+      projectName,
+      timbers,
+      cuts,
+      ownedTimbers,
+      kerf,
+      mode,
+      unit
+    )
+    setShareUrl(url)
+    setShowShareDialog(true)
+    setCopied(false)
+  }
+
+  const handleCopyUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Fallback
+      const input = document.createElement('input')
+      input.value = shareUrl
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      document.body.removeChild(input)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
 
   const handleExport = () => {
     const data = {
@@ -221,6 +273,8 @@ export function ProjectDialogs(props: Props) {
         <span className="hidden sm:inline">Export</span>
       </Button>
 
+
+
       <div className="relative">
         <input
           type="file"
@@ -234,6 +288,38 @@ export function ProjectDialogs(props: Props) {
           <span className="hidden sm:inline">Import</span>
         </Button>
       </div>
+
+            <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm" onClick={handleShare}>
+            <Share2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Share</span>
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Share Project</DialogTitle>
+            <DialogDescription>
+              Copy this link to share your project with others
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex gap-2">
+              <Input
+                value={shareUrl}
+                readOnly
+                className="font-mono text-xs"
+              />
+              <Button onClick={handleCopyUrl} variant="outline" size="icon">
+                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Anyone with this link can view and load your project configuration.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -96,13 +96,39 @@ export function SolutionCard({ solution, unit }: Props) {
           </div>
         </div>
 
+        {solution.purchasedTimbersNeeded > 0 && (
+          <div className="p-3 sm:p-4 bg-amber-50 dark:bg-amber-950 border-2 border-amber-400 dark:border-amber-600 rounded-lg">
+            <h4 className="font-semibold text-amber-800 dark:text-amber-200 mb-2 flex items-center gap-2">
+              🛒 Shopping List
+            </h4>
+            <ul className="space-y-1">
+              {Object.entries(
+                solution.plans
+                  .filter(p => !p.isOwned)
+                  .reduce((acc, plan) => {
+                    const key = `${mmToDisplayStr(plan.timberLength, unit)} @ $${plan.timberPrice.toFixed(2)}`
+                    acc[key] = (acc[key] || 0) + 1
+                    return acc
+                  }, {} as Record<string, number>)
+              ).map(([desc, count]) => (
+                <li key={desc} className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                  {count}× {desc}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-2 pt-2 border-t border-amber-300 dark:border-amber-700 text-sm font-bold text-amber-900 dark:text-amber-100">
+              Total: ${solution.totalCost.toFixed(2)}
+            </div>
+          </div>
+        )}
+
         <div className="space-y-3">
           <h4 className="font-semibold">Cutting Plans:</h4>
           {solution.plans.map((plan, index) => (
             <div key={index} className="p-3 sm:p-4 border rounded-lg space-y-2">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
                 <span className="font-medium text-sm sm:text-base">
-                  Timber #{index + 1}{' '}
+                  Piece #{index + 1}{' '}
                   {plan.isOwned && <span className="text-xs text-primary">(Owned)</span>}
                 </span>
                 <span className="text-xs sm:text-sm text-muted-foreground">

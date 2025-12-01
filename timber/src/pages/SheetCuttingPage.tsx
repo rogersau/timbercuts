@@ -8,13 +8,14 @@ import PanelList from '@/components/PanelList'
 import SheetProjectDialogs from '@/components/SheetProjectDialogs'
 import ControlPanel from '@/components/ControlPanel'
 import ErrorDialog from '@/components/ErrorDialog'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import Layout from '@/components/Layout'
 
 export default function SheetCuttingPage() {
-  const store = useSheetState()
+  const location = useLocation()
+  const store = useSheetState(location.search)
   const {
     sheets,
     panels,

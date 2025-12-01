@@ -49,6 +49,7 @@ export default function HomePage() {
                   <li>• Define available sheet sizes</li>
                   <li>• Specify required panel dimensions</li>
                   <li>• Visual cutting layout</li>
+                  <li>• Optionally follow grain direction</li>
                 </ul>
                 <Button className="mt-6 w-full" size="lg">
                   Start Sheet Cutting

@@ -40,9 +40,9 @@ describe('SolutionCard', () => {
 
   it('renders cutting plans', () => {
     render(<SolutionCard solution={mockSolution} unit="mm" />)
-    expect(screen.getByText('Timber #1')).toBeInTheDocument()
+    expect(screen.getByText('Piece #1')).toBeInTheDocument()
     expect(screen.getByText('(Owned)')).toBeInTheDocument()
-    expect(screen.getByText('Timber #2')).toBeInTheDocument()
+    expect(screen.getByText('Piece #2')).toBeInTheDocument()
 
     // Check for cuts
     const cuts = screen.getAllByText('1000mm')
