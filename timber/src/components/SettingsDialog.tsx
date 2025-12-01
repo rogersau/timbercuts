@@ -19,9 +19,12 @@ type Props = {
   setUnit: (unit: 'mm' | 'in') => void
   mode: 'cost' | 'waste'
   setMode: (mode: 'cost' | 'waste') => void
+  grainEnabled?: boolean
+  setGrainEnabled?: (enabled: boolean) => void
+  showGrainOption?: boolean
 }
 
-export function SettingsDialog({ kerf, setKerf, unit, setUnit, mode, setMode }: Props) {
+export function SettingsDialog({ kerf, setKerf, unit, setUnit, mode, setMode, grainEnabled, setGrainEnabled, showGrainOption }: Props) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -116,6 +119,32 @@ export function SettingsDialog({ kerf, setKerf, unit, setUnit, mode, setMode }: 
               </strong>
             </p>
           </div>
+
+          {showGrainOption && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium">Grain Direction</label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Enable to specify grain direction for sheets and panels. Panels won't be rotated
+                    if it would cause grain misalignment.
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={grainEnabled ?? false}
+                  onChange={(e) => setGrainEnabled?.(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                <span className="text-sm">Enable grain direction matching</span>
+              </label>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

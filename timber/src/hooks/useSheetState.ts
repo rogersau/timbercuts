@@ -4,6 +4,7 @@ import {
   type RequiredPanel,
   type SheetSolution,
   type OwnedSheet,
+  type GrainDirection,
 } from '@/lib/sheet-optimizer'
 import { getAllSheetProjects, saveSheetProject, deleteSheetProject, saveSheetDraft, getSheetDraft, type SheetProject } from '@/lib/storage'
 import SheetOptimizerWorker from '@/workers/sheet-optimizer.worker?worker'
@@ -18,6 +19,7 @@ export function useSheetState() {
     kerf: 3,
     mode: 'cost',
     unit: 'mm',
+    grainEnabled: false,
     currentProjectId: null,
     projectName: '',
     projects: getAllSheetProjects(),
@@ -40,6 +42,7 @@ export function useSheetState() {
       if (draft.kerf) dispatch({ type: 'SET_KERF', kerf: draft.kerf })
       if (draft.mode) dispatch({ type: 'SET_MODE', mode: draft.mode })
       if (draft.unit) dispatch({ type: 'SET_UNIT', unit: draft.unit })
+      if (draft.grainEnabled !== undefined) dispatch({ type: 'SET_GRAIN_ENABLED', grainEnabled: draft.grainEnabled })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -54,9 +57,10 @@ export function useSheetState() {
         kerf: state.kerf,
         mode: state.mode,
         unit: state.unit,
+        grainEnabled: state.grainEnabled,
       })
     }
-  }, [state.sheets, state.panels, state.ownedSheets, state.kerf, state.mode, state.unit, state.currentProjectId])
+  }, [state.sheets, state.panels, state.ownedSheets, state.kerf, state.mode, state.unit, state.grainEnabled, state.currentProjectId])
 
   useEffect(() => {
     workerRef.current = new SheetOptimizerWorker()
@@ -83,7 +87,7 @@ export function useSheetState() {
     []
   )
   const updateSheet = useCallback(
-    (index: number, field: keyof SheetStock, value: number) =>
+    (index: number, field: keyof SheetStock, value: number | GrainDirection) =>
       dispatch({ type: 'UPDATE_SHEET', index, field, value }),
     []
   )
@@ -91,7 +95,7 @@ export function useSheetState() {
   const addPanel = useCallback(() => dispatch({ type: 'ADD_PANEL' }), [])
   const removePanel = useCallback((index: number) => dispatch({ type: 'REMOVE_PANEL', index }), [])
   const updatePanel = useCallback(
-    (index: number, field: keyof RequiredPanel, value: number | string | boolean) =>
+    (index: number, field: keyof RequiredPanel, value: number | string | boolean | GrainDirection) =>
       dispatch({ type: 'UPDATE_PANEL', index, field, value }),
     []
   )
@@ -102,7 +106,7 @@ export function useSheetState() {
     []
   )
   const updateOwnedSheet = useCallback(
-    (index: number, field: keyof OwnedSheet, value: number) =>
+    (index: number, field: keyof OwnedSheet, value: number | GrainDirection) =>
       dispatch({ type: 'UPDATE_OWNED', index, field, value }),
     []
   )
@@ -114,6 +118,7 @@ export function useSheetState() {
   const setKerf = useCallback((kerf: number) => dispatch({ type: 'SET_KERF', kerf }), [])
   const setMode = useCallback((mode: 'cost' | 'waste') => dispatch({ type: 'SET_MODE', mode }), [])
   const setUnit = useCallback((unit: 'mm' | 'in') => dispatch({ type: 'SET_UNIT', unit }), [])
+  const setGrainEnabled = useCallback((grainEnabled: boolean) => dispatch({ type: 'SET_GRAIN_ENABLED', grainEnabled }), [])
   const setProjectName = useCallback(
     (name: string) => dispatch({ type: 'SET_PROJECT_NAME', name }),
     []
@@ -155,8 +160,9 @@ export function useSheetState() {
       kerf: state.kerf,
       mode: state.mode,
       ownedSheets: state.ownedSheets,
+      grainEnabled: state.grainEnabled,
     })
-  }, [state.sheets, state.panels, state.kerf, state.mode, state.ownedSheets])
+  }, [state.sheets, state.panels, state.kerf, state.mode, state.ownedSheets, state.grainEnabled])
 
   const handleSaveProject = useCallback(() => {
     if (!state.projectName.trim()) {
@@ -173,6 +179,7 @@ export function useSheetState() {
       kerf: state.kerf,
       mode: state.mode,
       unit: state.unit,
+      grainEnabled: state.grainEnabled,
     })
 
     setProjectId(project.id)
@@ -188,6 +195,7 @@ export function useSheetState() {
     state.kerf,
     state.mode,
     state.unit,
+    state.grainEnabled,
     setProjectId,
     setProjects,
     setShowSaveDialog,
@@ -201,10 +209,11 @@ export function useSheetState() {
       setKerf(project.kerf)
       setMode(project.mode)
       setUnit(project.unit)
+      setGrainEnabled(project.grainEnabled ?? false)
       setProjectId(project.id)
       setProjectName(project.name)
     },
-    [setSheets, setPanels, setOwnedSheets, setKerf, setMode, setUnit, setProjectId, setProjectName]
+    [setSheets, setPanels, setOwnedSheets, setKerf, setMode, setUnit, setGrainEnabled, setProjectId, setProjectName]
   )
 
   const handleLoadProject = useCallback(
@@ -246,6 +255,7 @@ export function useSheetState() {
       setUnit,
       setKerf,
       setMode,
+      setGrainEnabled,
       setShowErrorDialog,
       setErrorMessage,
       addSheet,
@@ -274,6 +284,7 @@ export function useSheetState() {
       setUnit,
       setKerf,
       setMode,
+      setGrainEnabled,
       setShowErrorDialog,
       setErrorMessage,
       addSheet,

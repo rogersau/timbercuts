@@ -24,6 +24,7 @@ export default function SheetCuttingPage() {
     kerf,
     mode,
     unit,
+    grainEnabled,
     currentProjectId,
     projectName,
     projects,
@@ -37,6 +38,7 @@ export default function SheetCuttingPage() {
     setUnit,
     setKerf,
     setMode,
+    setGrainEnabled,
     setShowErrorDialog,
     setErrorMessage,
   } = store
@@ -92,6 +94,8 @@ export default function SheetCuttingPage() {
             setUnit={setUnit}
             mode={mode}
             setMode={setMode}
+            grainEnabled={grainEnabled}
+            setGrainEnabled={setGrainEnabled}
             sheets={sheets}
             panels={panels}
             ownedSheets={ownedSheets}
@@ -108,6 +112,7 @@ export default function SheetCuttingPage() {
                 <SheetStockList
                   sheets={sheets}
                   unit={unit}
+                  grainEnabled={grainEnabled}
                   addSheet={addSheet}
                   removeSheet={removeSheet}
                   updateSheet={updateSheet}
@@ -125,6 +130,7 @@ export default function SheetCuttingPage() {
                 <OwnedSheetList
                   ownedSheets={ownedSheets}
                   unit={unit}
+                  grainEnabled={grainEnabled}
                   addOwnedSheet={addOwnedSheet}
                   removeOwnedSheet={removeOwnedSheet}
                   updateOwnedSheet={updateOwnedSheet}
@@ -143,6 +149,7 @@ export default function SheetCuttingPage() {
               <PanelList
                 panels={panels}
                 unit={unit}
+                grainEnabled={grainEnabled}
                 addPanel={addPanel}
                 removePanel={removePanel}
                 updatePanel={updatePanel}

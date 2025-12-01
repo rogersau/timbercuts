@@ -13,6 +13,7 @@ describe('SheetSolutionCard', () => {
   const mockSolution: SheetSolution = {
     totalCost: 150.0,
     totalSheets: 2,
+    totalWaste: 1360000,
     ownedSheetsUsed: 1,
     purchasedSheetsNeeded: 1,
     efficiency: 85.5,

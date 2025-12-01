@@ -6,18 +6,19 @@ import {
 } from '@/components/ui/input-group'
 import { Button } from '@/components/ui/button'
 import { Trash2, Plus } from 'lucide-react'
-import { type RequiredPanel } from '@/lib/sheet-optimizer'
+import { type RequiredPanel, type GrainDirection } from '@/lib/sheet-optimizer'
 import { mmToDisplayNumber, displayToMM } from '@/lib/units'
 
 type Props = {
   panels: RequiredPanel[]
   unit: 'mm' | 'in'
+  grainEnabled?: boolean
   addPanel: () => void
   removePanel: (idx: number) => void
-  updatePanel: (idx: number, field: keyof RequiredPanel, value: number | string | boolean) => void
+  updatePanel: (idx: number, field: keyof RequiredPanel, value: number | string | boolean | GrainDirection) => void
 }
 
-export function PanelList({ panels, unit, addPanel, removePanel, updatePanel }: Props) {
+export function PanelList({ panels, unit, grainEnabled, addPanel, removePanel, updatePanel }: Props) {
   return (
     <div className="space-y-2">
       {panels.map((panel, index) => (
@@ -56,7 +57,7 @@ export function PanelList({ panels, unit, addPanel, removePanel, updatePanel }: 
             </InputGroup>
           </div>
           {/* Quantity */}
-          <div className="flex-1 min-w-[calc(50%-1rem)] sm:min-w-0 sm:max-w-20">
+          <div className={`flex-1 sm:min-w-0 sm:max-w-20 ${grainEnabled ? 'min-w-[calc(33%-1rem)]' : 'min-w-[calc(50%-1rem)]'}`}>
             <InputGroup>
               <InputGroupAddon>
                 <InputGroupText>×</InputGroupText>
@@ -69,6 +70,20 @@ export function PanelList({ panels, unit, addPanel, removePanel, updatePanel }: 
               />
             </InputGroup>
           </div>
+          {/* Grain Direction */}
+          {grainEnabled && (
+            <div className="flex-1 min-w-[calc(33%-1rem)] sm:min-w-0 sm:max-w-28">
+              <select
+                className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+                value={panel.grain ?? 'none'}
+                onChange={(e) => updatePanel(index, 'grain', e.target.value as GrainDirection)}
+              >
+                <option value="none">No Grain</option>
+                <option value="horizontal">Horizontal</option>
+                <option value="vertical">Vertical</option>
+              </select>
+            </div>
+          )}
           {/* Delete */}
           <Button
             variant="outline"

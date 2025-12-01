@@ -6,20 +6,22 @@ import {
 } from '@/components/ui/input-group'
 import { Button } from '@/components/ui/button'
 import { Trash2, Plus } from 'lucide-react'
-import { type OwnedSheet } from '@/lib/sheet-optimizer'
+import { type OwnedSheet, type GrainDirection } from '@/lib/sheet-optimizer'
 import { mmToDisplayNumber, displayToMM } from '@/lib/units'
 
 type Props = {
   ownedSheets: OwnedSheet[]
   unit: 'mm' | 'in'
+  grainEnabled?: boolean
   addOwnedSheet: () => void
   removeOwnedSheet: (idx: number) => void
-  updateOwnedSheet: (idx: number, field: keyof OwnedSheet, value: number) => void
+  updateOwnedSheet: (idx: number, field: keyof OwnedSheet, value: number | GrainDirection) => void
 }
 
 export function OwnedSheetList({
   ownedSheets,
   unit,
+  grainEnabled,
   addOwnedSheet,
   removeOwnedSheet,
   updateOwnedSheet,
@@ -65,7 +67,7 @@ export function OwnedSheetList({
             </InputGroup>
           </div>
           {/* Quantity */}
-          <div className="flex-1 min-w-[calc(50%-1rem)] sm:min-w-0 sm:max-w-20">
+          <div className={`flex-1 sm:min-w-0 sm:max-w-20 ${grainEnabled ? 'min-w-[calc(33%-1rem)]' : 'min-w-[calc(50%-1rem)]'}`}>
             <InputGroup>
               <InputGroupAddon>
                 <InputGroupText>×</InputGroupText>
@@ -78,6 +80,20 @@ export function OwnedSheetList({
               />
             </InputGroup>
           </div>
+          {/* Grain Direction */}
+          {grainEnabled && (
+            <div className="flex-1 min-w-[calc(33%-1rem)] sm:min-w-0 sm:max-w-28">
+              <select
+                className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+                value={sheet.grain ?? 'none'}
+                onChange={(e) => updateOwnedSheet(index, 'grain', e.target.value as GrainDirection)}
+              >
+                <option value="none">No Grain</option>
+                <option value="horizontal">Horizontal</option>
+                <option value="vertical">Vertical</option>
+              </select>
+            </div>
+          )}
           {/* Delete */}
           <Button variant="outline" size="icon" className="shrink-0" onClick={() => removeOwnedSheet(index)}>
             <Trash2 className="h-4 w-4" />

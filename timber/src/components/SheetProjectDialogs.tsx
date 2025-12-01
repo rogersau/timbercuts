@@ -33,6 +33,8 @@ type Props = {
   setUnit: (unit: 'mm' | 'in') => void
   mode: 'cost' | 'waste'
   setMode: (mode: 'cost' | 'waste') => void
+  grainEnabled: boolean
+  setGrainEnabled: (enabled: boolean) => void
   sheets: SheetStock[]
   panels: RequiredPanel[]
   ownedSheets: OwnedSheet[]
@@ -57,6 +59,8 @@ export function SheetProjectDialogs(props: Props) {
     setUnit,
     mode,
     setMode,
+    grainEnabled,
+    setGrainEnabled,
     sheets,
     panels,
     ownedSheets,
@@ -73,6 +77,7 @@ export function SheetProjectDialogs(props: Props) {
       kerf,
       mode,
       unit,
+      grainEnabled,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     }
@@ -215,6 +220,9 @@ export function SheetProjectDialogs(props: Props) {
         setUnit={setUnit}
         mode={mode}
         setMode={setMode}
+        grainEnabled={grainEnabled}
+        setGrainEnabled={setGrainEnabled}
+        showGrainOption={true}
       />
       
       <Button variant="outline" size="sm" onClick={handleExport}>

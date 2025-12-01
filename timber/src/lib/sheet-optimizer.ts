@@ -1,7 +1,10 @@
+export type GrainDirection = 'horizontal' | 'vertical' | 'none'
+
 export interface SheetStock {
   width: number
   height: number
   price: number
+  grain?: GrainDirection
 }
 
 export interface RequiredPanel {
@@ -10,6 +13,7 @@ export interface RequiredPanel {
   quantity: number
   label?: string
   canRotate?: boolean
+  grain?: GrainDirection
 }
 
 export interface Placement {
@@ -20,6 +24,7 @@ export interface Placement {
   y: number
   rotated: boolean
   label?: string
+  grain?: GrainDirection
 }
 
 export interface SheetPlan {
@@ -48,6 +53,7 @@ export interface OwnedSheet {
   width: number
   height: number
   quantity: number
+  grain?: GrainDirection
 }
 
 interface Rect {
@@ -63,17 +69,20 @@ interface PanelToPlace {
   height: number
   label?: string
   canRotate: boolean
+  grain: GrainDirection
 }
 
 /**
  * Guillotine bin packing algorithm using Best Area Fit
  * Only allows cuts that go edge-to-edge (like a saw would)
+ * Respects grain direction when specified
  */
 function guillotinePack(
   sheetWidth: number,
   sheetHeight: number,
   panels: PanelToPlace[],
-  kerf: number
+  kerf: number,
+  sheetGrain: GrainDirection = 'none'
 ): { placements: Placement[]; remainingPanels: PanelToPlace[] } {
   const placements: Placement[] = []
   const remainingPanels = [...panels]
@@ -83,6 +92,20 @@ function guillotinePack(
 
   // Sort panels by area (largest first) for better packing
   remainingPanels.sort((a, b) => (b.width * b.height) - (a.width * a.height))
+
+  // Helper function to check if rotation is allowed based on grain
+  const canRotateWithGrain = (panelGrain: GrainDirection, rotated: boolean): boolean => {
+    // If either sheet or panel has no grain direction, rotation is allowed (if canRotate is true)
+    if (sheetGrain === 'none' || panelGrain === 'none') return true
+    
+    // If both have grain, they must match after potential rotation
+    // Panel grain after rotation: horizontal <-> vertical
+    const effectivePanelGrain = rotated 
+      ? (panelGrain === 'horizontal' ? 'vertical' : 'horizontal')
+      : panelGrain
+    
+    return effectivePanelGrain === sheetGrain
+  }
 
   let i = 0
   while (i < remainingPanels.length) {
@@ -101,25 +124,29 @@ function guillotinePack(
     for (let j = 0; j < freeRects.length; j++) {
       const rect = freeRects[j]
       
-      // Try normal orientation
+      // Try normal orientation (check grain compatibility)
       if (panelWithKerf.width <= rect.width && panelWithKerf.height <= rect.height) {
-        const score = rect.width * rect.height - panel.width * panel.height
-        if (score < bestScore) {
-          bestScore = score
-          bestRect = rect
-          bestRectIndex = j
-          bestRotated = false
+        if (canRotateWithGrain(panel.grain, false)) {
+          const score = rect.width * rect.height - panel.width * panel.height
+          if (score < bestScore) {
+            bestScore = score
+            bestRect = rect
+            bestRectIndex = j
+            bestRotated = false
+          }
         }
       }
       
-      // Try rotated if allowed
+      // Try rotated if allowed and grain-compatible
       if (panel.canRotate && panelWithKerf.height <= rect.width && panelWithKerf.width <= rect.height) {
-        const score = rect.width * rect.height - panel.width * panel.height
-        if (score < bestScore) {
-          bestScore = score
-          bestRect = rect
-          bestRectIndex = j
-          bestRotated = true
+        if (canRotateWithGrain(panel.grain, true)) {
+          const score = rect.width * rect.height - panel.width * panel.height
+          if (score < bestScore) {
+            bestScore = score
+            bestRect = rect
+            bestRectIndex = j
+            bestRotated = true
+          }
         }
       }
     }
@@ -127,6 +154,12 @@ function guillotinePack(
     if (bestRect && bestRectIndex >= 0) {
       const placedWidth = bestRotated ? panel.height : panel.width
       const placedHeight = bestRotated ? panel.width : panel.height
+      
+      // Calculate effective grain after rotation
+      let effectiveGrain = panel.grain
+      if (bestRotated && panel.grain !== 'none') {
+        effectiveGrain = panel.grain === 'horizontal' ? 'vertical' : 'horizontal'
+      }
       
       placements.push({
         panelIndex: panel.originalIndex,
@@ -136,6 +169,7 @@ function guillotinePack(
         y: bestRect.y,
         rotated: bestRotated,
         label: panel.label,
+        grain: effectiveGrain,
       })
 
       // Split the free rectangle (guillotine cut)
@@ -208,13 +242,15 @@ function mergeFreeRects(rects: Rect[]): Rect[] {
 
 /**
  * Optimizes sheet cutting to minimize cost and waste
+ * Supports grain direction matching when grainEnabled is true
  */
 export function optimizeSheetCutting(
   availableSheets: SheetStock[],
   requiredPanels: RequiredPanel[],
   kerf: number = 0,
   mode: OptimizeMode = 'cost',
-  ownedSheets: OwnedSheet[] = []
+  ownedSheets: OwnedSheet[] = [],
+  grainEnabled: boolean = false
 ): SheetSolution {
   // Flatten required panels into individual pieces
   const panels: PanelToPlace[] = []
@@ -226,6 +262,7 @@ export function optimizeSheetCutting(
         height: panel.height,
         label: panel.label,
         canRotate: panel.canRotate ?? true,
+        grain: grainEnabled ? (panel.grain ?? 'none') : 'none',
       })
     }
   })
@@ -233,11 +270,12 @@ export function optimizeSheetCutting(
   // Sort panels by area (largest first)
   panels.sort((a, b) => (b.width * b.height) - (a.width * a.height))
 
-  // Track owned sheet inventory
+  // Track owned sheet inventory with grain
   const ownedInventory = ownedSheets.map(s => ({ 
     width: s.width, 
     height: s.height, 
-    remaining: s.quantity 
+    remaining: s.quantity,
+    grain: grainEnabled ? (s.grain ?? 'none') : 'none' as GrainDirection,
   }))
 
   // Sort sheets by price efficiency (area per dollar)
@@ -256,13 +294,14 @@ export function optimizeSheetCutting(
       usedArea: number
       wasteArea: number
       isOwned: boolean
+      sheetGrain: GrainDirection
     } | null = null
 
     // First try owned sheets
     for (const owned of ownedInventory) {
       if (owned.remaining <= 0) continue
 
-      const result = guillotinePack(owned.width, owned.height, [...remainingPanels], kerf)
+      const result = guillotinePack(owned.width, owned.height, [...remainingPanels], kerf, owned.grain)
       
       if (result.placements.length > 0) {
         const usedArea = result.placements.reduce((sum, p) => sum + p.width * p.height, 0)
@@ -276,12 +315,13 @@ export function optimizeSheetCutting(
 
         if (shouldUpdate) {
           bestFit = {
-            sheet: { width: owned.width, height: owned.height, price: 0 },
+            sheet: { width: owned.width, height: owned.height, price: 0, grain: owned.grain },
             placements: result.placements,
             remaining: result.remainingPanels,
             usedArea,
             wasteArea,
             isOwned: true,
+            sheetGrain: owned.grain,
           }
         }
       }
@@ -290,7 +330,8 @@ export function optimizeSheetCutting(
     // Then try purchasable sheets if no good owned fit
     if (!bestFit || !bestFit.isOwned) {
       for (const sheet of sortedSheets) {
-        const result = guillotinePack(sheet.width, sheet.height, [...remainingPanels], kerf)
+        const sheetGrain = grainEnabled ? (sheet.grain ?? 'none') : 'none' as GrainDirection
+        const result = guillotinePack(sheet.width, sheet.height, [...remainingPanels], kerf, sheetGrain)
         
         if (result.placements.length > 0) {
           const usedArea = result.placements.reduce((sum, p) => sum + p.width * p.height, 0)
@@ -305,6 +346,7 @@ export function optimizeSheetCutting(
               usedArea,
               wasteArea,
               isOwned: false,
+              sheetGrain,
             }
             continue
           }
@@ -320,6 +362,7 @@ export function optimizeSheetCutting(
                 usedArea,
                 wasteArea,
                 isOwned: false,
+                sheetGrain,
               }
             }
           } else {
@@ -334,6 +377,7 @@ export function optimizeSheetCutting(
                 usedArea,
                 wasteArea,
                 isOwned: false,
+                sheetGrain,
               }
             }
           }
@@ -346,7 +390,7 @@ export function optimizeSheetCutting(
       const largestPanel = remainingPanels[0]
       const suitableSheet = sortedSheets.find(
         s => (s.width >= largestPanel.width && s.height >= largestPanel.height) ||
-             (s.width >= largestPanel.height && s.height >= largestPanel.width)
+             (largestPanel.canRotate && s.width >= largestPanel.height && s.height >= largestPanel.width)
       )
 
       if (!suitableSheet) {
@@ -365,6 +409,7 @@ export function optimizeSheetCutting(
         y: 0,
         rotated,
         label: largestPanel.label,
+        grain: largestPanel.grain,
       }
 
       bestFit = {
@@ -374,6 +419,7 @@ export function optimizeSheetCutting(
         usedArea: largestPanel.width * largestPanel.height,
         wasteArea: suitableSheet.width * suitableSheet.height - largestPanel.width * largestPanel.height,
         isOwned: false,
+        sheetGrain: grainEnabled ? (suitableSheet.grain ?? 'none') : 'none',
       }
     }
 

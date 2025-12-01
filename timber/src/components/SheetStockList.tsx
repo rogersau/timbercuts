@@ -6,18 +6,19 @@ import {
 } from '@/components/ui/input-group'
 import { Button } from '@/components/ui/button'
 import { Trash2, Plus } from 'lucide-react'
-import { type SheetStock } from '@/lib/sheet-optimizer'
+import { type SheetStock, type GrainDirection } from '@/lib/sheet-optimizer'
 import { mmToDisplayNumber, displayToMM } from '@/lib/units'
 
 type Props = {
   sheets: SheetStock[]
   unit: 'mm' | 'in'
+  grainEnabled?: boolean
   addSheet: () => void
   removeSheet: (idx: number) => void
-  updateSheet: (idx: number, field: keyof SheetStock, value: number) => void
+  updateSheet: (idx: number, field: keyof SheetStock, value: number | GrainDirection) => void
 }
 
-export function SheetStockList({ sheets, unit, addSheet, removeSheet, updateSheet }: Props) {
+export function SheetStockList({ sheets, unit, grainEnabled, addSheet, removeSheet, updateSheet }: Props) {
   return (
     <div className="space-y-2">
       {sheets.map((sheet, index) => (
@@ -56,7 +57,7 @@ export function SheetStockList({ sheets, unit, addSheet, removeSheet, updateShee
             </InputGroup>
           </div>
           {/* Price */}
-          <div className="flex-1 min-w-[calc(50%-1rem)] sm:min-w-0 sm:max-w-28">
+          <div className={`flex-1 sm:min-w-0 sm:max-w-28 ${grainEnabled ? 'min-w-[calc(33%-1rem)]' : 'min-w-[calc(50%-1rem)]'}`}>
             <InputGroup>
               <InputGroupAddon>
                 <InputGroupText>$</InputGroupText>
@@ -70,6 +71,20 @@ export function SheetStockList({ sheets, unit, addSheet, removeSheet, updateShee
               />
             </InputGroup>
           </div>
+          {/* Grain Direction */}
+          {grainEnabled && (
+            <div className="flex-1 min-w-[calc(33%-1rem)] sm:min-w-0 sm:max-w-28">
+              <select
+                className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+                value={sheet.grain ?? 'none'}
+                onChange={(e) => updateSheet(index, 'grain', e.target.value as GrainDirection)}
+              >
+                <option value="none">No Grain</option>
+                <option value="horizontal">Horizontal</option>
+                <option value="vertical">Vertical</option>
+              </select>
+            </div>
+          )}
           {/* Delete */}
           <Button
             variant="outline"

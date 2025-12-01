@@ -3,6 +3,7 @@ import {
   type RequiredPanel,
   type SheetSolution,
   type OwnedSheet,
+  type GrainDirection,
 } from '@/lib/sheet-optimizer'
 import { type SheetProject } from '@/lib/storage'
 
@@ -14,6 +15,7 @@ export type SheetState = {
   kerf: number
   mode: 'cost' | 'waste'
   unit: 'mm' | 'in'
+  grainEnabled: boolean
   currentProjectId: string | null
   projectName: string
   projects: SheetProject[]
@@ -27,17 +29,18 @@ export type SheetState = {
 export type SheetAction =
   | { type: 'ADD_SHEET' }
   | { type: 'REMOVE_SHEET'; index: number }
-  | { type: 'UPDATE_SHEET'; index: number; field: keyof SheetStock; value: number }
+  | { type: 'UPDATE_SHEET'; index: number; field: keyof SheetStock; value: number | GrainDirection }
   | { type: 'ADD_PANEL' }
   | { type: 'REMOVE_PANEL'; index: number }
-  | { type: 'UPDATE_PANEL'; index: number; field: keyof RequiredPanel; value: number | string | boolean }
+  | { type: 'UPDATE_PANEL'; index: number; field: keyof RequiredPanel; value: number | string | boolean | GrainDirection }
   | { type: 'ADD_OWNED' }
   | { type: 'REMOVE_OWNED'; index: number }
-  | { type: 'UPDATE_OWNED'; index: number; field: keyof OwnedSheet; value: number }
+  | { type: 'UPDATE_OWNED'; index: number; field: keyof OwnedSheet; value: number | GrainDirection }
   | { type: 'SET_SOLUTION'; solution: SheetSolution | null }
   | { type: 'SET_KERF'; kerf: number }
   | { type: 'SET_MODE'; mode: 'cost' | 'waste' }
   | { type: 'SET_UNIT'; unit: 'mm' | 'in' }
+  | { type: 'SET_GRAIN_ENABLED'; grainEnabled: boolean }
   | { type: 'SET_PROJECT_NAME'; name: string }
   | { type: 'SET_PROJECT_ID'; id: string | null }
   | { type: 'SET_PROJECTS'; projects: SheetProject[] }
@@ -100,6 +103,8 @@ export function sheetReducer(state: SheetState, action: SheetAction): SheetState
       return { ...state, mode: action.mode }
     case 'SET_UNIT':
       return { ...state, unit: action.unit }
+    case 'SET_GRAIN_ENABLED':
+      return { ...state, grainEnabled: action.grainEnabled }
 
     case 'SET_PROJECT_NAME':
       return { ...state, projectName: action.name }
@@ -133,6 +138,7 @@ export function sheetReducer(state: SheetState, action: SheetAction): SheetState
         ownedSheets: [],
         kerf: 3,
         mode: 'cost',
+        grainEnabled: false,
         solution: null,
       }
 

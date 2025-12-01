@@ -23,6 +23,7 @@ export interface SheetProject {
   kerf: number
   mode: 'cost' | 'waste'
   unit: 'mm' | 'in'
+  grainEnabled?: boolean
   createdAt: number
   updatedAt: number
 }
