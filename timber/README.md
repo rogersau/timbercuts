@@ -56,6 +56,39 @@ This project uses Vitest for unit testing the optimization logic.
 pnpm test:run
 ```
 
+## Docker Deployment
+
+For self-hosting, you can run Timber Cuts using Docker.
+
+### Using Docker Compose (Recommended)
+
+```bash
+cd timber
+docker compose up -d
+```
+
+The application will be available at `http://localhost:8080`.
+
+### Using Docker Directly
+
+Build the image:
+
+```bash
+cd timber
+docker build -t timbercuts .
+```
+
+Run the container:
+
+```bash
+docker run -d -p 8080:80 --name timbercuts timbercuts
+```
+
+### Configuration
+
+- **Port**: By default, the application runs on port 8080. Change the port mapping in `docker-compose.yml` or the `-p` flag to use a different port.
+- **Base Path**: The Docker build configures the application to run at the root path (`/`). For GitHub Pages deployment, the standard build uses `/timbercuts/`.
+
 ## Tech Stack
 
 - **Frontend Framework:** [React](https://react.dev/)

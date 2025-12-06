@@ -1,0 +1,31 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+
+# Git
+.git
+.gitignore
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Test files
+*.test.ts
+*.test.tsx
+src/test
+TESTING.md
+coverage
+
+# Documentation
+docs
+
+# Misc
+*.md
+!README.md
+.husky
+*.log
