@@ -631,7 +631,7 @@ export function validatePaverImport(json: unknown): PaverProject | null {
     paver: data.paver as PaverType,
     pattern: (data.pattern as LayingPattern) || 'stack',
     gap: (data.gap as number) || 3,
-    customWastePercentage: (data.customWastePercentage as number) || null,
+    customWastePercentage: (data.customWastePercentage as number) ?? null,
     unit: (data.unit as 'mm' | 'in') || 'mm',
     createdAt: (data.createdAt as number) || Date.now(),
     updatedAt: (data.updatedAt as number) || Date.now(),
