@@ -60,27 +60,49 @@ pnpm test:run
 
 For self-hosting, you can run Timber Cuts using Docker.
 
-### Using Docker Compose (Recommended)
+### Using Pre-built Image (Recommended)
+
+The easiest way to run Timber Cuts is to use the pre-built Docker image from GitHub Container Registry:
 
 ```bash
-cd timber
-docker compose up -d
+docker run -d -p 8080:80 --name timbercuts ghcr.io/rogersau/timbercuts:latest
 ```
 
 The application will be available at `http://localhost:8080`.
 
-### Using Docker Directly
+#### Available Tags
 
-Build the image:
+- `latest` - Latest stable release from main branch
+- `main` - Latest build from main branch
+- `v1.0.0` - Specific version tags (when released)
+- `sha-abc1234` - Specific commit builds
+
+### Using Docker Compose
+
+Create a `docker-compose.yml` file:
+
+```yaml
+services:
+  timbercuts:
+    image: ghcr.io/rogersau/timbercuts:latest
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+```
+
+Then run:
+
+```bash
+docker compose up -d
+```
+
+### Building Locally
+
+If you prefer to build the image yourself:
 
 ```bash
 cd timber
 docker build -t timbercuts .
-```
-
-Run the container:
-
-```bash
 docker run -d -p 8080:80 --name timbercuts timbercuts
 ```
 
