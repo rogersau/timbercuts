@@ -1,5 +1,6 @@
 import type { TimberStock, RequiredCut, OwnedTimber } from './timber-optimizer'
 import type { SheetStock, RequiredPanel, OwnedSheet } from './sheet-optimizer'
+import type { RectangularArea, PaverType, LayingPattern } from './paver-calculator'
 
 export interface Project {
   id: string
@@ -28,10 +29,25 @@ export interface SheetProject {
   updatedAt: number
 }
 
+export interface PaverProject {
+  id: string
+  name: string
+  areas: RectangularArea[]
+  paver: PaverType
+  pattern: LayingPattern
+  gap: number
+  customWastePercentage: number | null
+  unit: 'mm' | 'in'
+  createdAt: number
+  updatedAt: number
+}
+
 const STORAGE_KEY = 'timber-cut-projects'
 const DRAFT_KEY = 'timber-cut-draft'
 const SHEET_STORAGE_KEY = 'sheet-cut-projects'
 const SHEET_DRAFT_KEY = 'sheet-cut-draft'
+const PAVER_STORAGE_KEY = 'paver-projects'
+const PAVER_DRAFT_KEY = 'paver-draft'
 
 /**
  * Retrieves all projects from local storage.
@@ -249,6 +265,91 @@ export function getSheetDraft(): Partial<SheetProject> | null {
   }
 }
 
+// ============ Paver Project Functions ============
+
+export function getAllPaverProjects(): PaverProject[] {
+  try {
+    const data = localStorage.getItem(PAVER_STORAGE_KEY)
+    return data ? JSON.parse(data) : []
+  } catch (error) {
+    console.error('Error loading paver projects:', error)
+    return []
+  }
+}
+
+export function getPaverProject(id: string): PaverProject | null {
+  const projects = getAllPaverProjects()
+  return projects.find((p) => p.id === id) || null
+}
+
+export function savePaverProject(
+  project: Omit<PaverProject, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }
+): PaverProject {
+  const projects = getAllPaverProjects()
+  const now = Date.now()
+
+  if (project.id) {
+    const index = projects.findIndex((p) => p.id === project.id)
+    if (index !== -1) {
+      projects[index] = {
+        ...project,
+        id: project.id,
+        createdAt: projects[index].createdAt,
+        updatedAt: now,
+      } as PaverProject
+    } else {
+      const newProject: PaverProject = {
+        ...project,
+        id: project.id,
+        createdAt: now,
+        updatedAt: now,
+      } as PaverProject
+      projects.push(newProject)
+    }
+  } else {
+    const newProject: PaverProject = {
+      ...project,
+      id: crypto.randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+    } as PaverProject
+    projects.push(newProject)
+  }
+
+  localStorage.setItem(PAVER_STORAGE_KEY, JSON.stringify(projects))
+  return projects.find((p) => p.id === project.id) || projects[projects.length - 1]
+}
+
+export function deletePaverProject(id: string): boolean {
+  const projects = getAllPaverProjects()
+  const filtered = projects.filter((p) => p.id !== id)
+
+  if (filtered.length === projects.length) {
+    return false
+  }
+
+  localStorage.setItem(PAVER_STORAGE_KEY, JSON.stringify(filtered))
+  return true
+}
+
+export function savePaverDraft(data: Partial<PaverProject>) {
+  try {
+    localStorage.setItem(PAVER_DRAFT_KEY, JSON.stringify(data))
+  } catch (error) {
+    console.error('Error saving paver draft:', error)
+  }
+}
+
+export function getPaverDraft(): Partial<PaverProject> | null {
+  try {
+    const data = localStorage.getItem(PAVER_DRAFT_KEY)
+    return data ? JSON.parse(data) : null
+  } catch (error) {
+    console.error('Error loading paver draft:', error)
+    return null
+  }
+}
+
 // ============ URL Share Functions ============
 
 export type ShareableTimberData = {
@@ -274,7 +375,18 @@ export type ShareableSheetData = {
   g?: boolean // grainEnabled
 }
 
-export type ShareableData = ShareableTimberData | ShareableSheetData
+export type ShareablePaverData = {
+  t: 'paver'
+  n: string
+  a: RectangularArea[] // areas
+  pv: PaverType // paver
+  pt: LayingPattern // pattern
+  gp: number // gap
+  cw: number | null // customWastePercentage
+  u: 'mm' | 'in'
+}
+
+export type ShareableData = ShareableTimberData | ShareableSheetData | ShareablePaverData
 
 /**
  * Encodes project data to a shareable URL hash string.
@@ -472,6 +584,80 @@ export function createSheetExportData(
     mode,
     unit,
     grainEnabled,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  }
+}
+
+/**
+ * Creates a shareable URL for a paver project.
+ */
+export function createPaverShareUrl(
+  name: string,
+  areas: RectangularArea[],
+  paver: PaverType,
+  pattern: LayingPattern,
+  gap: number,
+  customWastePercentage: number | null,
+  unit: 'mm' | 'in'
+): string {
+  const data: ShareablePaverData = {
+    t: 'paver',
+    n: name || 'Shared Paver Project',
+    a: areas,
+    pv: paver,
+    pt: pattern,
+    gp: gap,
+    cw: customWastePercentage,
+    u: unit,
+  }
+  const encoded = encodeShareData(data)
+  const baseUrl = window.location.origin + window.location.pathname
+  return `${baseUrl}#/paver?share=${encoded}`
+}
+
+/**
+ * Validates and parses imported paver project JSON.
+ */
+export function validatePaverImport(json: unknown): PaverProject | null {
+  const data = json as Record<string, unknown>
+  if (!Array.isArray(data.areas) || !data.paver) {
+    return null
+  }
+  return {
+    id: 'imported-' + Date.now(),
+    name: (data.name as string) || 'Imported Paver Project',
+    areas: data.areas,
+    paver: data.paver as PaverType,
+    pattern: (data.pattern as LayingPattern) || 'stack',
+    gap: (data.gap as number) || 3,
+    customWastePercentage: (data.customWastePercentage as number) || null,
+    unit: (data.unit as 'mm' | 'in') || 'mm',
+    createdAt: (data.createdAt as number) || Date.now(),
+    updatedAt: (data.updatedAt as number) || Date.now(),
+  }
+}
+
+/**
+ * Creates export data object for paver project.
+ */
+export function createPaverExportData(
+  projectName: string,
+  areas: RectangularArea[],
+  paver: PaverType,
+  pattern: LayingPattern,
+  gap: number,
+  customWastePercentage: number | null,
+  unit: 'mm' | 'in'
+) {
+  return {
+    name: projectName || 'Untitled Paver Project',
+    areas,
+    paver,
+    pattern,
+    gap,
+    customWastePercentage,
+    unit,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   }
