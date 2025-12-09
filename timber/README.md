@@ -56,6 +56,68 @@ This project uses Vitest for unit testing the optimization logic.
 pnpm test:run
 ```
 
+## Docker Deployment
+
+For self-hosting, you can run Timber Cuts using Docker.
+
+### Using Pre-built Image (Recommended)
+
+The easiest way to run Timber Cuts is to use the pre-built Docker image from GitHub Container Registry:
+
+```bash
+docker run -d -p 8080:80 --name timbercuts ghcr.io/rogersau/timbercuts:latest
+```
+
+The application will be available at `http://localhost:8080`.
+
+#### Available Tags
+
+- `latest` - Latest stable release from main branch
+- `main` - Latest build from main branch
+- `v1.0.0` - Specific version tags (when released)
+- `sha-abc1234` - Specific commit builds
+
+### Using Docker Compose
+
+To use the pre-built image with Docker Compose, create a `docker-compose.yml` file:
+
+```yaml
+services:
+  timbercuts:
+    image: ghcr.io/rogersau/timbercuts:latest
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+```
+
+Then run:
+
+```bash
+docker compose up -d
+```
+
+### Building Locally
+
+If you prefer to build the image yourself, you can use the included `docker-compose.yml` file in the `timber/` directory:
+
+```bash
+cd timber
+docker compose up -d
+```
+
+Or build and run directly:
+
+```bash
+cd timber
+docker build -t timbercuts .
+docker run -d -p 8080:80 --name timbercuts timbercuts
+```
+
+### Configuration
+
+- **Port**: By default, the application runs on port 8080. Change the port mapping in `docker-compose.yml` or the `-p` flag to use a different port.
+- **Base Path**: The Docker build configures the application to run at the root path (`/`). For GitHub Pages deployment, the standard build uses `/timbercuts/`.
+
 ## Tech Stack
 
 - **Frontend Framework:** [React](https://react.dev/)
