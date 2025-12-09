@@ -79,7 +79,7 @@ The application will be available at `http://localhost:8080`.
 
 ### Using Docker Compose
 
-Create a `docker-compose.yml` file:
+To use the pre-built image with Docker Compose, create a `docker-compose.yml` file:
 
 ```yaml
 services:
@@ -98,7 +98,14 @@ docker compose up -d
 
 ### Building Locally
 
-If you prefer to build the image yourself:
+If you prefer to build the image yourself, you can use the included `docker-compose.yml` file in the `timber/` directory:
+
+```bash
+cd timber
+docker compose up -d
+```
+
+Or build and run directly:
 
 ```bash
 cd timber

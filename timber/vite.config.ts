@@ -5,7 +5,7 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/timbercuts/',
+  base: process.env.VITE_BASE_PATH || '/timbercuts/',
   plugins: [
     react(),
     VitePWA({

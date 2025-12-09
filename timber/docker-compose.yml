@@ -1,5 +1,6 @@
 services:
   timbercuts:
+    container_name: timbercuts
     build:
       context: .
       dockerfile: Dockerfile
