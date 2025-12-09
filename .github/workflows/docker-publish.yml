@@ -24,6 +24,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '10.22.0'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: timber/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: timber
+        run: pnpm install
+
+      - name: Run tests
+        working-directory: timber
+        run: pnpm test:run
+
+      - name: Run linter
+        working-directory: timber
+        run: pnpm lint
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
