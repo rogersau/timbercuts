@@ -26,6 +26,5 @@ docs
 
 # Misc
 *.md
-!README.md
 .husky
 *.log
