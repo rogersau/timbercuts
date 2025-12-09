@@ -16,7 +16,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Build the application with base path set to root for self-hosting
-RUN sed -i "s|base: '/timbercuts/'|base: '/'|" vite.config.ts && pnpm build
+RUN sed -i "s|base: '/timbercuts/'|base: '/'|" vite.config.ts && pnpm vite build
 
 # Production stage
 FROM nginx:alpine
