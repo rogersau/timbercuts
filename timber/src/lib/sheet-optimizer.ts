@@ -110,10 +110,6 @@ function guillotinePack(
   let i = 0
   while (i < remainingPanels.length) {
     const panel = remainingPanels[i]
-    const panelWithKerf = { 
-      width: panel.width + kerf, 
-      height: panel.height + kerf 
-    }
     
     let bestRect: Rect | null = null
     let bestRectIndex = -1
@@ -123,9 +119,11 @@ function guillotinePack(
     // Find best free rectangle for this panel
     for (let j = 0; j < freeRects.length; j++) {
       const rect = freeRects[j]
+      const widthUsed = panel.width + (rect.width > panel.width ? kerf : 0)
+      const heightUsed = panel.height + (rect.height > panel.height ? kerf : 0)
       
       // Try normal orientation (check grain compatibility)
-      if (panelWithKerf.width <= rect.width && panelWithKerf.height <= rect.height) {
+      if (widthUsed <= rect.width && heightUsed <= rect.height) {
         if (canRotateWithGrain(panel.grain, false)) {
           const score = rect.width * rect.height - panel.width * panel.height
           if (score < bestScore) {
@@ -138,7 +136,9 @@ function guillotinePack(
       }
       
       // Try rotated if allowed and grain-compatible
-      if (panel.canRotate && panelWithKerf.height <= rect.width && panelWithKerf.width <= rect.height) {
+      const rotatedWidthUsed = panel.height + (rect.width > panel.height ? kerf : 0)
+      const rotatedHeightUsed = panel.width + (rect.height > panel.width ? kerf : 0)
+      if (panel.canRotate && rotatedWidthUsed <= rect.width && rotatedHeightUsed <= rect.height) {
         if (canRotateWithGrain(panel.grain, true)) {
           const score = rect.width * rect.height - panel.width * panel.height
           if (score < bestScore) {
@@ -171,10 +171,10 @@ function guillotinePack(
         label: panel.label,
         grain: effectiveGrain,
       })
-
+      
       // Split the free rectangle (guillotine cut)
-      const usedWidth = placedWidth + kerf
-      const usedHeight = placedHeight + kerf
+      const usedWidth = placedWidth + (bestRect.width > placedWidth ? kerf : 0)
+      const usedHeight = placedHeight + (bestRect.height > placedHeight ? kerf : 0)
       
       freeRects.splice(bestRectIndex, 1)
       
