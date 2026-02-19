@@ -55,6 +55,16 @@ describe('optimizeSheetCutting', () => {
       // With kerf, behavior may vary but should still produce valid result
       expect(resultWithKerf.plans[0].placements.length).toBeGreaterThanOrEqual(1)
     })
+
+    it('should not require terminal kerf at sheet edge', () => {
+      const sheets: SheetStock[] = [{ width: 1200, height: 600, price: 20 }]
+      const panels: RequiredPanel[] = [{ width: 1200, height: 200, quantity: 2 }]
+
+      const result = optimizeSheetCutting(sheets, panels, 5, 'cost')
+
+      expect(result.totalSheets).toBe(1)
+      expect(result.plans[0].placements).toHaveLength(2)
+    })
   })
 
   describe('with owned sheets', () => {
